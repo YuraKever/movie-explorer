@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getMovieDetail } from "@/features/movies/api";
+import { getMovieDetail } from "@/features/movies/api.server";
 import { posterUrl, backdropUrl } from "@/lib/tmdb";
 
 type Props = { params: Promise<{ id: string }> };

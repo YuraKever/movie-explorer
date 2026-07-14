@@ -1,14 +1,34 @@
-import { tmdbFetch } from "@/lib/tmdb";
-import type { MovieDetail } from "./types";
+import type { Movie, PaginatedResponse } from "./types";
 
 /**
- * Функции запросов к TMDB, сгруппированные по фиче. Тонкие обёртки над
- * серверным клиентом — вся авторизация и кэш живут в lib/tmdb.
+ * Клиентские запросы к TMDB через собственный прокси `/api/tmdb/*`.
+ * Ключ подставляется на сервере в Route Handler — клиент его не видит.
  *
- * `getMovieDetail` вызывается и в `generateMetadata`, и в самой странице;
- * Next дедуплицирует одинаковые fetch в рамках одного рендера, так что
- * это один сетевой запрос, а не два.
+ * Серверные (RSC / generateMetadata) запросы живут отдельно в `api.server.ts`,
+ * чтобы серверный клиент TMDB (и переменные окружения) не попадали в бандл клиента.
  */
-export function getMovieDetail(id: string | number) {
-  return tmdbFetch<MovieDetail>(`movie/${id}`);
+async function proxyFetch<T>(
+  path: string,
+  params: Record<string, string> = {},
+): Promise<T> {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`/api/tmdb/${path}${qs ? `?${qs}` : ""}`);
+
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    throw new Error(body?.error ?? `Запрос не удался (${res.status})`);
+  }
+
+  return res.json() as Promise<T>;
+}
+
+/** Поиск фильмов по названию. */
+export function searchMovies(query: string, page = 1) {
+  return proxyFetch<PaginatedResponse<Movie>>("search/movie", {
+    query,
+    page: String(page),
+    include_adult: "false",
+  });
 }

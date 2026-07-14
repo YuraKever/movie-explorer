@@ -16,7 +16,15 @@ export function Header() {
           <span aria-hidden>🎬</span>
           <span>Movie Explorer</span>
         </Link>
-        <ThemeToggle />
+        <nav className="flex items-center gap-1">
+          <Link
+            href="/search"
+            className="rounded-md px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
+          >
+            Поиск
+          </Link>
+          <ThemeToggle />
+        </nav>
       </div>
     </header>
   );
