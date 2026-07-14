@@ -25,3 +25,18 @@ export type PaginatedResponse<T> = {
   total_pages: number;
   total_results: number;
 };
+
+export type Genre = { id: number; name: string };
+
+/**
+ * Полный ответ TMDB по одному фильму (`/movie/{id}`). Отличается от списочного
+ * `Movie`: жанры приходят объектами (`genres`), а не id (`genre_ids`), плюс
+ * есть длительность, слоган и т.п. Актёров/трейлер/похожие пока не тянем (Фаза 6).
+ */
+export type MovieDetail = Movie & {
+  genres: Genre[];
+  runtime: number | null;
+  tagline?: string;
+  status?: string;
+  homepage?: string | null;
+};

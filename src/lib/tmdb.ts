@@ -72,3 +72,13 @@ export function posterUrl(
 ): string | null {
   return path ? `${TMDB_IMAGE_BASE}/${size}${path}` : null;
 }
+
+export type BackdropSize = "w780" | "w1280" | "original";
+
+/** URL кадра-фона (backdrop) фильма. null, если фона нет. */
+export function backdropUrl(
+  path: string | null | undefined,
+  size: BackdropSize = "w1280",
+): string | null {
+  return path ? `${TMDB_IMAGE_BASE}/${size}${path}` : null;
+}
