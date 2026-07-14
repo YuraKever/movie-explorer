@@ -40,3 +40,16 @@ export type MovieDetail = Movie & {
   status?: string;
   homepage?: string | null;
 };
+
+export type SortOption =
+  | "popularity.desc"
+  | "vote_average.desc"
+  | "primary_release_date.desc"
+  | "revenue.desc";
+
+/** Фильтры каталога (`discover/movie`). Пустые поля не применяются. */
+export type DiscoverFilters = {
+  genre?: string; // id жанра строкой
+  year?: string;
+  sort?: SortOption;
+};

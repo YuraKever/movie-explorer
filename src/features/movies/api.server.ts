@@ -1,5 +1,5 @@
 import { tmdbFetch } from "@/lib/tmdb";
-import type { MovieDetail } from "./types";
+import type { Genre, MovieDetail } from "./types";
 
 /**
  * Серверные запросы к TMDB (RSC и `generateMetadata`): напрямую через серверный
@@ -10,4 +10,12 @@ import type { MovieDetail } from "./types";
  */
 export function getMovieDetail(id: string | number) {
   return tmdbFetch<MovieDetail>(`movie/${id}`);
+}
+
+/** Справочник жанров для фильтров каталога. Кэшируется надолго — список стабилен. */
+export async function getGenres(): Promise<Genre[]> {
+  const data = await tmdbFetch<{ genres: Genre[] }>("genre/movie/list", {}, {
+    revalidate: 60 * 60 * 24,
+  });
+  return data.genres;
 }
