@@ -55,3 +55,20 @@ export async function tmdbFetch<T>(
 
   return res.json() as Promise<T>;
 }
+
+/** Базовый URL для картинок TMDB (постеры, бэкдропы). */
+export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
+
+export type PosterSize = "w185" | "w342" | "w500" | "w780";
+
+/**
+ * Строит URL постера нужного размера. Возвращает null, если постера нет, —
+ * компонент покажет заглушку вместо битой картинки.
+ * Хост image.tmdb.org разрешён в next.config.ts (images.remotePatterns).
+ */
+export function posterUrl(
+  path: string | null | undefined,
+  size: PosterSize = "w500",
+): string | null {
+  return path ? `${TMDB_IMAGE_BASE}/${size}${path}` : null;
+}
