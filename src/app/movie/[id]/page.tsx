@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getMovieDetail } from "@/features/movies/api.server";
+import { FavoriteButton } from "@/components/favorite-button";
 import { posterUrl, backdropUrl } from "@/lib/tmdb";
 
 type Props = { params: Promise<{ id: string }> };
@@ -108,6 +109,14 @@ export default async function MoviePage({ params }: Props) {
               )}
               {runtime && <span>{runtime}</span>}
               {movie.release_date && <span>{movie.release_date}</span>}
+            </div>
+
+            <div className="mt-5">
+              <FavoriteButton
+                movie={movie}
+                withLabel
+                className="rounded-lg border border-black/10 px-4 py-2 transition-colors hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+              />
             </div>
 
             {movie.genres.length > 0 && (

@@ -1,4 +1,4 @@
-import type { Movie } from "@/features/movies/types";
+import type { MovieCardData } from "@/features/movies/types";
 import { MovieCard } from "./movie-card";
 
 /**
@@ -6,7 +6,7 @@ import { MovieCard } from "./movie-card";
  * Пустой результат обрабатывается здесь же, чтобы вызывающий код не дублировал
  * это состояние на каждой странице (тренды, поиск, избранное).
  */
-export function MovieGrid({ movies }: { movies: Movie[] }) {
+export function MovieGrid({ movies }: { movies: MovieCardData[] }) {
   if (movies.length === 0) {
     return (
       <p className="py-16 text-center text-foreground/60">

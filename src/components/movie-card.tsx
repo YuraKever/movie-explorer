@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { posterUrl } from "@/lib/tmdb";
-import type { Movie } from "@/features/movies/types";
+import { FavoriteButton } from "./favorite-button";
+import type { MovieCardData } from "@/features/movies/types";
 
 /**
  * Карточка фильма: постер (next/image, без сдвига макета за счёт aspect-[2/3]),
@@ -14,7 +15,7 @@ import type { Movie } from "@/features/movies/types";
 const POSTER_SIZES =
   "(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw";
 
-export function MovieCard({ movie }: { movie: Movie }) {
+export function MovieCard({ movie }: { movie: MovieCardData }) {
   const poster = posterUrl(movie.poster_path, "w500");
   const year = movie.release_date?.slice(0, 4);
   const rating = movie.vote_average > 0 ? movie.vote_average.toFixed(1) : null;
@@ -47,6 +48,11 @@ export function MovieCard({ movie }: { movie: Movie }) {
             ★ {rating}
           </span>
         )}
+
+        <FavoriteButton
+          movie={movie}
+          className="absolute left-2 top-2 h-8 w-8 justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/75"
+        />
       </div>
 
       <h3

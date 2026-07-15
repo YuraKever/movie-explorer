@@ -29,6 +29,15 @@ export type PaginatedResponse<T> = {
 export type Genre = { id: number; name: string };
 
 /**
+ * Минимум полей, которого достаточно карточке и избранному. И полный `Movie`,
+ * и `MovieDetail` структурно подходят сюда, поэтому карточку можно кормить любым.
+ */
+export type MovieCardData = Pick<
+  Movie,
+  "id" | "title" | "poster_path" | "release_date" | "vote_average"
+>;
+
+/**
  * Полный ответ TMDB по одному фильму (`/movie/{id}`). Отличается от списочного
  * `Movie`: жанры приходят объектами (`genres`), а не id (`genre_ids`), плюс
  * есть длительность, слоган и т.п. Актёров/трейлер/похожие пока не тянем (Фаза 6).

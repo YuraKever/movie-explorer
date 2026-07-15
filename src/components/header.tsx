@@ -29,6 +29,12 @@ export function Header() {
           >
             Поиск
           </Link>
+          <Link
+            href="/favorites"
+            className="rounded-md px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
+          >
+            Избранное
+          </Link>
           <ThemeToggle />
         </nav>
       </div>
