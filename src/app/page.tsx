@@ -32,7 +32,7 @@ export default async function HomePage() {
         <ErrorState message={error} />
       ) : (
         <div className="mt-6">
-          <MovieGrid movies={movies} />
+          <MovieGrid movies={movies} priority />
         </div>
       )}
     </main>

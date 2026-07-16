@@ -78,7 +78,7 @@ export function InfiniteMovieGrid({
       <p className="mb-4 text-sm text-foreground/60">
         Найдено: {total.toLocaleString("ru-RU")}
       </p>
-      <MovieGrid movies={movies} />
+      <MovieGrid movies={movies} priority />
 
       {/* Сентинел бесконечной прокрутки */}
       <div ref={sentinelRef} aria-hidden className="h-px" />

@@ -30,7 +30,7 @@ export function FavoritesList() {
     );
   }
 
-  return <MovieGrid movies={items} />;
+  return <MovieGrid movies={items} priority />;
 }
 
 function SkeletonGrid() {

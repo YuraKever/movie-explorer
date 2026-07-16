@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getMovieDetail } from "@/features/movies/api.server";
 import { FavoriteButton } from "@/components/favorite-button";
+import { TrailerEmbed } from "@/components/trailer-embed";
+import { CastRow } from "@/components/cast-row";
+import { MovieGrid } from "@/components/movie-grid";
 import { posterUrl, backdropUrl } from "@/lib/tmdb";
 
 type Props = { params: Promise<{ id: string }> };
@@ -48,6 +51,17 @@ export default async function MoviePage({ params }: Props) {
   const rating = movie.vote_average > 0 ? movie.vote_average.toFixed(1) : null;
   const runtime = movie.runtime ? formatRuntime(movie.runtime) : null;
 
+  const cast = movie.credits?.cast.slice(0, 12) ?? [];
+  const similar = movie.similar?.results.slice(0, 12) ?? [];
+  const trailer =
+    movie.videos?.results.find(
+      (v) => v.site === "YouTube" && v.type === "Trailer" && v.official,
+    ) ??
+    movie.videos?.results.find(
+      (v) => v.site === "YouTube" && v.type === "Trailer",
+    ) ??
+    movie.videos?.results.find((v) => v.site === "YouTube");
+
   return (
     <main className="relative">
       {/* Кадр-фон: мягко затухает вниз, служит только атмосферой */}
@@ -77,6 +91,8 @@ export default async function MoviePage({ params }: Props) {
                 alt={`Постер фильма «${movie.title}»`}
                 fill
                 sizes="220px"
+                loading="eager"
+                fetchPriority="high"
                 className="object-cover"
               />
             ) : (
@@ -140,6 +156,31 @@ export default async function MoviePage({ params }: Props) {
             </p>
           </div>
         </div>
+
+        {trailer && (
+          <section className="mt-10">
+            <h2 className="mb-3 text-xl font-bold tracking-tight">Трейлер</h2>
+            <TrailerEmbed
+              videoKey={trailer.key}
+              title={movie.title}
+              backdrop={backdrop}
+            />
+          </section>
+        )}
+
+        {cast.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-3 text-xl font-bold tracking-tight">В ролях</h2>
+            <CastRow cast={cast} />
+          </section>
+        )}
+
+        {similar.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-4 text-xl font-bold tracking-tight">Похожие</h2>
+            <MovieGrid movies={similar} />
+          </section>
+        )}
       </div>
     </main>
   );

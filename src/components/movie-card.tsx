@@ -15,7 +15,13 @@ import type { MovieCardData } from "@/features/movies/types";
 const POSTER_SIZES =
   "(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw";
 
-export function MovieCard({ movie }: { movie: MovieCardData }) {
+export function MovieCard({
+  movie,
+  priority = false,
+}: {
+  movie: MovieCardData;
+  priority?: boolean;
+}) {
   const poster = posterUrl(movie.poster_path, "w500");
   const year = movie.release_date?.slice(0, 4);
   const rating = movie.vote_average > 0 ? movie.vote_average.toFixed(1) : null;
@@ -32,6 +38,9 @@ export function MovieCard({ movie }: { movie: MovieCardData }) {
             alt={`Постер фильма «${movie.title}»`}
             fill
             sizes={POSTER_SIZES}
+            // Первый ряд — выше сгиба: грузим сразу, это кандидат в LCP.
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (

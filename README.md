@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎬 Movie Explorer
 
-## Getting Started
+Веб-приложение для поиска и просмотра фильмов на данных [TMDB](https://www.themoviedb.org/).
+Pet-проект для frontend-портфолио — не «учебное задание», а законченный продукт с
+живым деплоем.
 
-First, run the development server:
+> **🔗 Live-демо:** _скоро — деплой на Vercel_
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+![Главная — тёмная тема](docs/screenshots/home-dark.jpg)
+
+---
+
+## Возможности
+
+- 🔥 **Тренды недели** на главной (SSR)
+- 🗂 **Каталог** с фильтрами (жанр / год / сортировка) и **бесконечной лентой**
+- 🔎 **Поиск** по названию с debounce
+- 🎬 **Детальная страница**: постер, рейтинг, жанры, трейлер (YouTube), актёрский состав, похожие фильмы
+- ❤️ **Избранное** — сохраняется в браузере и переживает перезагрузку
+- 🌗 **Тёмная/светлая тема** без «мигания» при загрузке
+- 📱 **Адаптив** от 320px
+- ♿ Обработаны все состояния: loading (skeleton), error, empty, 404
+
+## Стек
+
+| | |
+|---|---|
+| **Framework** | Next.js 16 (App Router, RSC + Client Components) |
+| **Язык** | TypeScript, React 19 |
+| **Стили** | Tailwind CSS v4 |
+| **Данные (клиент)** | TanStack Query — кэш, бесконечная лента |
+| **Состояние** | Zustand + persist (избранное) |
+| **Тема** | next-themes |
+| **API** | TMDB |
+| **Деплой** | Vercel |
+
+## Скриншоты
+
+| Главная (светлая) | Детальная страница |
+|---|---|
+| ![](docs/screenshots/home-light.jpg) | ![](docs/screenshots/movie-dark.jpg) |
+
+| Каталог с фильтрами | Мобильная версия |
+|---|---|
+| ![](docs/screenshots/discover-dark.jpg) | <img src="docs/screenshots/mobile-dark.jpg" width="240" /> |
+
+## Архитектура: что интересного
+
+- **Ключ TMDB никогда не покидает сервер.** Клиентские запросы идут через
+  Route Handler-прокси `app/api/tmdb/[...path]`, который подставляет ключ на сервере.
+  В бандле и в Network клиента ключа нет — отдельный плюс на собеседовании.
+- **RSC там, где можно; клиент — где нужен интерактив.** Главная и детали серверные
+  (SSR + кэш `fetch`), поиск / лента / избранное — клиентские.
+- **Данные разделены на клиент и сервер:** `features/movies/api.ts` (клиент, через
+  прокси) и `api.server.ts` (RSC, напрямую с ключом) — клиентский бандл не тянет
+  серверный код.
+- **Переиспользуемая бесконечная лента** — `InfiniteMovieGrid` поверх `useInfiniteQuery`
+  + `IntersectionObserver`; один компонент и в каталоге, и в поиске.
+- **Фильтры и запрос живут в URL** (`searchParams`) — подборку можно расшарить, она
+  переживает перезагрузку. Читаем их **на сервере**, чтобы обойти Suspense-границу
+  `useSearchParams`.
+- **Тема без мигания** — next-themes выставляет класс до первой отрисовки, а Tailwind v4
+  переключён на классовый вариант через `@custom-variant dark`.
+- **Избранное без hydration-ошибок** — флаг гидрации на `useSyncExternalStore`.
+
+## Структура
+
+```
+src/
+├── app/                      # маршруты (App Router)
+│   ├── page.tsx              # главная — тренды (RSC)
+│   ├── movie/[id]/           # детальная + loading-скелет
+│   ├── discover/             # каталог с фильтрами
+│   ├── search/               # поиск
+│   ├── favorites/            # избранное
+│   ├── api/tmdb/[...path]/   # прокси к TMDB (ключ на сервере)
+│   ├── error.tsx · not-found.tsx · loading.tsx
+├── components/               # MovieCard/Grid, Filters, InfiniteMovieGrid, …
+├── features/movies/          # api (client) · api.server (RSC) · queries · types
+├── store/favorites.ts        # Zustand + persist
+├── providers/                # QueryProvider · ThemeProvider
+├── hooks/ · lib/tmdb.ts       # серверный клиент TMDB + помощники
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Локальный запуск
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 1. Node 22 (см. .nvmrc)
+nvm use
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 2. Зависимости
+npm install
 
-## Learn More
+# 3. Ключ TMDB → .env.local (шаблон в .env.example)
+#    TMDB_ACCESS_TOKEN=eyJ...   (v4 Read Access Token с themoviedb.org)
 
-To learn more about Next.js, take a look at the following resources:
+# 4. Запуск
+npm run dev        # http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Для деплоя на Vercel добавьте `TMDB_ACCESS_TOKEN` в переменные окружения проекта.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Чему научился
 
-## Deploy on Vercel
+- **App Router на практике:** где действительно нужен RSC, а где Client Component; как
+  не протащить серверный код в клиентский бандл (разделение `api` / `api.server`).
+- **Next.js 16 ≠ то, что было раньше:** `params`/`searchParams` теперь промисы, prop
+  `priority` у `next/image` устарел (вместо него `loading="eager"`/`preload`), в Tailwind v4
+  классовая тёмная тема настраивается через `@custom-variant`. Привычку «писать по памяти»
+  пришлось заменить на чтение доков перед кодом.
+- **Гидрация — это про совпадение сервера и клиента:** тема и избранное (данные из
+  `localStorage`, которых нет на сервере) требуют аккуратного флага гидрации, иначе
+  React ругается и UI «мигает».
+- **URL как состояние:** фильтры и поиск в `searchParams` — бесплатный шаринг и history.
+- **Безопасность по умолчанию:** прокси-паттерн, чтобы секрет не утёк в клиент.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Методология
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Проект строился методом **tracer bullet** из «The Pragmatic Programmer»: сначала тонкий
+сквозной срез через все слои, затем наращивание функционала фазами. Полный план и статус —
+в [`PLAN.md`](./PLAN.md).
+
+---
+
+Данные предоставлены [TMDB](https://www.themoviedb.org/), но продукт не одобрен и не
+сертифицирован TMDB.

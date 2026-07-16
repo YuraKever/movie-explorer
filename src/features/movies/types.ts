@@ -42,12 +42,31 @@ export type MovieCardData = Pick<
  * `Movie`: жанры приходят объектами (`genres`), а не id (`genre_ids`), плюс
  * есть длительность, слоган и т.п. Актёров/трейлер/похожие пока не тянем (Фаза 6).
  */
+export type CastMember = {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+};
+
+export type Video = {
+  key: string;
+  site: string;
+  type: string;
+  name: string;
+  official: boolean;
+};
+
 export type MovieDetail = Movie & {
   genres: Genre[];
   runtime: number | null;
   tagline?: string;
   status?: string;
   homepage?: string | null;
+  // Приходят только при append_to_response (см. getMovieDetail).
+  credits?: { cast: CastMember[] };
+  videos?: { results: Video[] };
+  similar?: PaginatedResponse<Movie>;
 };
 
 export type SortOption =

@@ -9,7 +9,10 @@ import type { Genre, MovieDetail } from "./types";
  * переменные окружения. Клиентские запросы — в `api.ts` (через `/api/tmdb`).
  */
 export function getMovieDetail(id: string | number) {
-  return tmdbFetch<MovieDetail>(`movie/${id}`);
+  // append_to_response тянет актёров, трейлеры и похожие одним запросом.
+  return tmdbFetch<MovieDetail>(`movie/${id}`, {
+    append_to_response: "credits,videos,similar",
+  });
 }
 
 /** Справочник жанров для фильтров каталога. Кэшируется надолго — список стабилен. */
