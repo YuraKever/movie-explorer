@@ -1,0 +1,23 @@
+# Локальный Postgres для разработки. Прод — Neon (тот же драйвер pg, меняется
+# только DATABASE_URL). Поднять: `docker compose up -d db`.
+services:
+  db:
+    image: postgres:17
+    container_name: movie-explorer-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: movie
+      POSTGRES_PASSWORD: movie
+      POSTGRES_DB: movie_explorer
+    ports:
+      - "5432:5432"
+    volumes:
+      - movie-explorer-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U movie -d movie_explorer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  movie-explorer-pgdata:

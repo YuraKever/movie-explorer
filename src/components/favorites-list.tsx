@@ -1,21 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useFavorites } from "@/store/favorites";
-import { useHydrated } from "@/hooks/use-hydrated";
+import { useFavorites } from "@/features/favorites/queries";
 import { MovieGrid } from "@/components/movie-grid";
 
 /**
- * Список избранного из localStorage. До гидрации показываем skeleton, совпадающий
- * с серверным «пусто», — иначе рассинхрон. После — реальная сетка либо приглашение.
+ * Список избранного с сервера. Пока грузится — skeleton; дальше — сетка либо
+ * приглашение начать. Страница /favorites уже защищена на сервере (requireUser),
+ * так что сюда попадает только залогиненный пользователь.
  */
 export function FavoritesList() {
-  const hydrated = useHydrated();
-  const items = useFavorites((s) => s.items);
+  const { data, isPending } = useFavorites();
 
-  if (!hydrated) return <SkeletonGrid />;
+  if (isPending) return <SkeletonGrid />;
 
-  if (items.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className="py-16 text-center">
         <p className="text-foreground/60">Пока пусто.</p>
@@ -30,7 +29,7 @@ export function FavoritesList() {
     );
   }
 
-  return <MovieGrid movies={items} priority />;
+  return <MovieGrid movies={data} priority />;
 }
 
 function SkeletonGrid() {

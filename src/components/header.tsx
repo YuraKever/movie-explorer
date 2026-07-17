@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
+import { AuthNav } from "./auth-nav";
 
 /**
  * Шапка сайта: бренд-ссылка на главную и переключатель темы.
@@ -35,6 +36,7 @@ export function Header() {
           >
             Избранное
           </Link>
+          <AuthNav />
           <ThemeToggle />
         </nav>
       </div>

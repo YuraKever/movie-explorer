@@ -1,7 +1,11 @@
 "use client";
 
-import { useFavorites } from "@/store/favorites";
-import { useHydrated } from "@/hooks/use-hydrated";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import {
+  useIsFavorite,
+  useToggleFavorite,
+} from "@/features/favorites/queries";
 import type { MovieCardData } from "@/features/movies/types";
 
 type Props = {
@@ -12,15 +16,31 @@ type Props = {
 
 /**
  * Кнопка «в избранное». Живёт и внутри карточки-ссылки (иконка), и на деталях
- * (с подписью). `active` учитывает `useHydrated`: до монтирования всегда false —
- * так вывод совпадает с серверным и нет hydration-ошибки. Внутри `<Link>` гасим
+ * (с подписью). Избранное теперь на сервере и привязано к аккаунту:
+ *  - гость → клик уводит на /login (с возвратом на текущую страницу);
+ *  - залогиненный → оптимистичный toggle через TanStack Query.
+ *
+ * `active` завязан на сессию: до её загрузки (и на сервере) — false, что совпадает
+ * с серверным рендером и не даёт hydration-рассинхрона. Внутри `<Link>` гасим
  * переход (preventDefault/stopPropagation), чтобы клик не открывал фильм.
  */
 export function FavoriteButton({ movie, withLabel = false, className = "" }: Props) {
-  const hydrated = useHydrated();
-  const isFav = useFavorites((s) => s.items.some((m) => m.id === movie.id));
-  const toggle = useFavorites((s) => s.toggle);
-  const active = hydrated && isFav;
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: session } = useSession();
+  const isFav = useIsFavorite(movie.id);
+  const toggle = useToggleFavorite();
+  const active = Boolean(session) && isFav;
+
+  function onClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    toggle.mutate({ movie, isFav });
+  }
 
   return (
     <button
@@ -28,11 +48,7 @@ export function FavoriteButton({ movie, withLabel = false, className = "" }: Pro
       aria-pressed={active}
       aria-label={active ? "Убрать из избранного" : "Добавить в избранное"}
       title={active ? "Убрать из избранного" : "Добавить в избранное"}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggle(movie);
-      }}
+      onClick={onClick}
       className={`inline-flex items-center gap-2 ${className}`}
     >
       <svg
