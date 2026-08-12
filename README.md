@@ -4,7 +4,7 @@
 Pet-проект для frontend-портфолио — не «учебное задание», а законченный продукт с
 живым деплоем.
 
-> **🔗 Live-демо:** _скоро — деплой на Vercel_
+> **🔗 Live-демо:** https://movie-explorer-zeta-ten.vercel.app
 
 ![Главная — тёмная тема](docs/screenshots/home-dark.jpg)
 
