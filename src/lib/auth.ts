@@ -11,4 +11,7 @@ import { db, schema } from "./db";
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: { enabled: true },
+  // Preview-деплои Vercel живут на доменах, отличных от BETTER_AUTH_URL, —
+  // без этого их origin не пройдёт CSRF-проверку.
+  trustedOrigins: ["https://*.vercel.app"],
 });
