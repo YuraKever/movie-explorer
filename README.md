@@ -1,161 +1,168 @@
 # 🎬 Movie Explorer
 
-Веб-приложение для поиска и просмотра фильмов на данных [TMDB](https://www.themoviedb.org/).
-Pet-проект для frontend-портфолио — не «учебное задание», а законченный продукт с
-живым деплоем.
+A web app for browsing and searching movies, powered by [TMDB](https://www.themoviedb.org/).
+A pet project for a frontend portfolio — not a tutorial exercise, but a finished product
+with a live deployment.
 
-> **🔗 Live-демо:** https://movie-explorer-zeta-ten.vercel.app
+> **🔗 Live demo:** https://movie-explorer-zeta-ten.vercel.app
 
-![Главная — тёмная тема](docs/screenshots/home-dark.jpg)
+![Home — dark theme](docs/screenshots/home-dark.jpg)
 
 ---
 
-## Возможности
+## Features
 
-- 🔥 **Тренды недели** на главной (SSR)
-- 🗂 **Каталог** с фильтрами (жанр / год / сортировка) и **бесконечной лентой**
-- 🔎 **Поиск** по названию с debounce
-- 🎬 **Детальная страница**: постер, рейтинг, жанры, трейлер (YouTube), актёрский состав, похожие фильмы
-- 🔐 **Аккаунты** — регистрация и вход по email + паролю (Better Auth), сессия в httpOnly-cookie
-- ❤️ **Избранное у каждого своё** — хранится на сервере (Postgres) и привязано к аккаунту; при первом входе разово переносится из старого `localStorage`
-- 🌗 **Тёмная/светлая тема** без «мигания» при загрузке
-- 📱 **Адаптив** от 320px
-- ♿ Обработаны все состояния: loading (skeleton), error, empty, 404
+- 🔥 **Trending this week** on the home page (SSR)
+- 🗂 **Discover** with filters (genre / year / sorting) and an **infinite feed**
+- 🔎 **Search** by title, debounced
+- 🎬 **Detail page**: poster, rating, genres, trailer (YouTube), cast, similar movies
+- 🔐 **Accounts** — sign-up and sign-in with email + password (Better Auth), session in an httpOnly cookie
+- ❤️ **Per-user favorites** — stored on the server (Postgres) and tied to the account; migrated once from the old `localStorage` on first sign-in
+- 🌗 **Dark/light theme** with no flash on load
+- 📱 **Responsive** from 320px
+- ♿ Every state handled: loading (skeleton), error, empty, 404
 
-## Стек
+## Stack
 
 | | |
 |---|---|
 | **Framework** | Next.js 16 (App Router, RSC + Client Components) |
-| **Язык** | TypeScript, React 19 |
-| **Стили** | Tailwind CSS v4 |
-| **Данные (клиент)** | TanStack Query — кэш, бесконечная лента, оптимистичный toggle избранного |
-| **Аутентификация** | Better Auth — email + пароль, сессии в cookie |
-| **База данных** | PostgreSQL + Drizzle ORM (локально — Docker, прод — Neon) |
-| **Тема** | next-themes |
+| **Language** | TypeScript, React 19 |
+| **Styling** | Tailwind CSS v4 |
+| **Client data** | TanStack Query — cache, infinite feed, optimistic favorite toggle |
+| **Auth** | Better Auth — email + password, sessions in a cookie |
+| **Database** | PostgreSQL + Drizzle ORM (Docker locally, Neon in production) |
+| **Theme** | next-themes |
 | **API** | TMDB |
-| **Деплой** | Vercel |
+| **Deployment** | Vercel |
 
-## Скриншоты
+## Screenshots
 
-| Главная (светлая) | Детальная страница |
+| Home (light) | Detail page |
 |---|---|
 | ![](docs/screenshots/home-light.jpg) | ![](docs/screenshots/movie-dark.jpg) |
 
-| Каталог с фильтрами | Мобильная версия |
+| Discover with filters | Mobile |
 |---|---|
 | ![](docs/screenshots/discover-dark.jpg) | <img src="docs/screenshots/mobile-dark.jpg" width="240" /> |
 
-## Архитектура: что интересного
+## Architecture: the interesting parts
 
-- **Ключ TMDB никогда не покидает сервер.** Клиентские запросы идут через
-  Route Handler-прокси `app/api/tmdb/[...path]`, который подставляет ключ на сервере.
-  В бандле и в Network клиента ключа нет — отдельный плюс на собеседовании.
-- **RSC там, где можно; клиент — где нужен интерактив.** Главная и детали серверные
-  (SSR + кэш `fetch`), поиск / лента / избранное — клиентские.
-- **Данные разделены на клиент и сервер:** `features/movies/api.ts` (клиент, через
-  прокси) и `api.server.ts` (RSC, напрямую с ключом) — клиентский бандл не тянет
-  серверный код.
-- **Переиспользуемая бесконечная лента** — `InfiniteMovieGrid` поверх `useInfiniteQuery`
-  + `IntersectionObserver`; один компонент и в каталоге, и в поиске.
-- **Фильтры и запрос живут в URL** (`searchParams`) — подборку можно расшарить, она
-  переживает перезагрузку. Читаем их **на сервере**, чтобы обойти Suspense-границу
-  `useSearchParams`.
-- **Тема без мигания** — next-themes выставляет класс до первой отрисовки, а Tailwind v4
-  переключён на классовый вариант через `@custom-variant dark`.
-- **Избранное — на сервере и у каждого своё.** Таблица `favorites` в Postgres с
-  `UNIQUE(user_id, movie_id)`; чтение и мутации — через route handlers под сессией.
-  На клиенте — TanStack Query с **оптимистичным** toggle (мгновенный отклик, откат при ошибке).
-- **Аутентификация — Better Auth** (email + пароль), сессия в httpOnly-cookie. Проверку
-  сессии централизует **DAL** (`lib/dal.ts`, мемоизация через React `cache`), а не layout —
-  как советует гайд Next. Схему таблиц auth сгенерировал CLI Better Auth поверх Drizzle.
-- **Proxy вместо middleware** (переименование в Next 16): оптимистичный редирект — гостя с
-  `/favorites`, залогиненного со страниц входа — по наличию cookie, без похода в БД. Настоящая
-  проверка живёт ближе к данным: в самой странице (`requireUser`) и в API-роутах.
-- **Миграция без потерь:** при первом входе избранное из старого `localStorage` разово
-  переносится на сервер (`/api/favorites/import`) и очищается локально только после успеха.
+- **The TMDB key never leaves the server.** Client requests go through the Route Handler
+  proxy `app/api/tmdb/[...path]`, which injects the key server-side. The key is absent
+  from the bundle and from the client's Network tab — a nice thing to point at in an
+  interview.
+- **RSC where possible; client components where interaction is needed.** Home and detail
+  pages are server-rendered (SSR + `fetch` cache); search / feed / favorites are
+  client-side.
+- **Data access is split by runtime:** `features/movies/api.ts` (client, through the
+  proxy) and `api.server.ts` (RSC, directly with the key) — the client bundle never pulls
+  in server code.
+- **Reusable infinite feed** — `InfiniteMovieGrid` on top of `useInfiniteQuery` +
+  `IntersectionObserver`; one component serves both discover and search.
+- **Filters and query live in the URL** (`searchParams`) — a selection is shareable and
+  survives a reload. They are read **on the server**, which avoids the `useSearchParams`
+  Suspense boundary.
+- **No theme flash** — next-themes sets the class before the first paint, and Tailwind v4
+  is switched to the class-based variant via `@custom-variant dark`.
+- **Favorites are server-side and per-user.** A `favorites` table in Postgres with
+  `UNIQUE(user_id, movie_id)`; reads and mutations go through route handlers under the
+  session. On the client, TanStack Query with an **optimistic** toggle (instant feedback,
+  rollback on failure).
+- **Auth is Better Auth** (email + password) with the session in an httpOnly cookie.
+  The session check is centralized in the **DAL** (`lib/dal.ts`, memoized with React
+  `cache`) rather than in a layout, as the Next guide recommends. The auth table schema
+  was generated by the Better Auth CLI on top of Drizzle.
+- **Proxy instead of middleware** (the Next 16 rename): an optimistic redirect — a guest
+  away from `/favorites`, a signed-in user away from the auth screens — based on cookie
+  presence, with no DB round-trip. The real check lives closer to the data: in the page
+  itself (`requireUser`) and in the API routes.
+- **Lossless migration:** on first sign-in, favorites from the old `localStorage` are
+  moved to the server once (`/api/favorites/import`) and cleared locally only after
+  success.
 
-## Структура
+## Structure
 
 ```
 src/
-├── app/                      # маршруты (App Router)
-│   ├── page.tsx              # главная — тренды (RSC)
-│   ├── movie/[id]/           # детальная + loading-скелет
-│   ├── discover/ · search/   # каталог с фильтрами · поиск
-│   ├── favorites/            # избранное (защищено, requireUser)
-│   ├── (auth)/login·register # экраны входа/регистрации (route group)
-│   ├── api/tmdb/[...path]/   # прокси к TMDB (ключ на сервере)
-│   ├── api/auth/[...all]/     # эндпоинт Better Auth
-│   ├── api/favorites/         # CRUD избранного + /import
+├── app/                      # routes (App Router)
+│   ├── page.tsx              # home — trending (RSC)
+│   ├── movie/[id]/           # detail page + loading skeleton
+│   ├── discover/ · search/   # discover with filters · search
+│   ├── favorites/            # favorites (protected, requireUser)
+│   ├── (auth)/login·register # sign-in/sign-up screens (route group)
+│   ├── api/tmdb/[...path]/   # TMDB proxy (key stays on the server)
+│   ├── api/auth/[...all]/     # Better Auth endpoint
+│   ├── api/favorites/         # favorites CRUD + /import
 │   ├── error.tsx · not-found.tsx · loading.tsx
 ├── components/               # MovieCard/Grid, Filters, AuthNav, auth/*-form, …
 ├── features/movies/          # api (client) · api.server (RSC) · queries · types
 ├── features/favorites/       # api · api.server (Drizzle) · queries · migrate-local
-├── lib/db/                   # клиент Drizzle · schema · auth-schema (CLI)
-├── lib/auth.ts · auth-client.ts · dal.ts   # Better Auth + проверка сессии
+├── lib/db/                   # Drizzle client · schema · auth-schema (CLI)
+├── lib/auth.ts · auth-client.ts · dal.ts   # Better Auth + session check
 ├── providers/                # QueryProvider · ThemeProvider
-├── lib/tmdb.ts               # серверный клиент TMDB + помощники
+├── lib/tmdb.ts               # server-side TMDB client + helpers
 proxy.ts (src/) · drizzle.config.ts · docker-compose.yml
 ```
 
-## Локальный запуск
+## Running locally
 
 ```bash
-# 1. Node 22 (см. .nvmrc)
+# 1. Node 22 (see .nvmrc)
 nvm use
 
-# 2. Зависимости
+# 2. Dependencies
 npm install
 
-# 3. .env.local (шаблон в .env.example):
-#    TMDB_ACCESS_TOKEN=eyJ...                 # v4 Read Access Token с themoviedb.org
+# 3. .env.local (template in .env.example):
+#    TMDB_ACCESS_TOKEN=eyJ...                 # v4 Read Access Token from themoviedb.org
 #    DATABASE_URL=postgres://movie:movie@localhost:5432/movie_explorer
 #    BETTER_AUTH_SECRET=...                    # openssl rand -base64 32
 #    BETTER_AUTH_URL=http://localhost:3000
 
-# 4. Postgres в Docker + схема
-docker compose up -d db     # локальная база из docker-compose.yml
-npm run db:migrate          # применить миграции Drizzle
+# 4. Postgres in Docker + schema
+docker compose up -d db     # local database from docker-compose.yml
+npm run db:migrate          # apply Drizzle migrations
 
-# 5. Запуск
+# 5. Start
 npm run dev                 # http://localhost:3000
 ```
 
-**Работа с БД:** `npm run db:generate` — создать миграцию из изменённой схемы,
-`npm run db:migrate` — применить, `npm run db:studio` — GUI Drizzle Studio.
-Схему таблиц Better Auth (при изменении конфига auth) регенерирует
+**Working with the database:** `npm run db:generate` creates a migration from a changed
+schema, `npm run db:migrate` applies it, `npm run db:studio` opens Drizzle Studio.
+The Better Auth table schema (after an auth config change) is regenerated with
 `npx @better-auth/cli generate --config src/lib/auth.ts --output src/lib/db/auth-schema.ts`.
 
-**Деплой на Vercel:** заведите БД в [Neon](https://neon.tech) (тот же драйвер `pg`, меняется
-лишь `DATABASE_URL`) и добавьте в переменные окружения `TMDB_ACCESS_TOKEN`, `DATABASE_URL`,
-`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (прод-домен). Миграции — `npm run db:migrate` на
-строке подключения Neon.
+**Deploying to Vercel:** create a database on [Neon](https://neon.tech) (same `pg` driver,
+only `DATABASE_URL` changes) and add `TMDB_ACCESS_TOKEN`, `DATABASE_URL`,
+`BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (the production domain) to the environment
+variables. Migrations: run `npm run db:migrate` against the Neon connection string.
 
-## Чему научился
+## What I learned
 
-- **App Router на практике:** где действительно нужен RSC, а где Client Component; как
-  не протащить серверный код в клиентский бандл (разделение `api` / `api.server`).
-- **Next.js 16 ≠ то, что было раньше:** `params`/`searchParams` теперь промисы, prop
-  `priority` у `next/image` устарел (вместо него `loading="eager"`/`preload`), в Tailwind v4
-  классовая тёмная тема настраивается через `@custom-variant`. Привычку «писать по памяти»
-  пришлось заменить на чтение доков перед кодом.
-- **Гидрация — это про совпадение сервера и клиента:** тема и состояние авторизации
-  (сессия резолвится на клиенте) требуют аккуратной начальной отрисовки, иначе React
-  ругается и UI «мигает».
-- **Аутентификация и per-user данные:** сессии в httpOnly-cookie, проверка близко к
-  данным (DAL + API-роуты, а не только layout/proxy), защита от open-redirect, перенос
-  старого `localStorage`-избранного на сервер без потерь при первом входе.
-- **URL как состояние:** фильтры и поиск в `searchParams` — бесплатный шаринг и history.
-- **Безопасность по умолчанию:** прокси-паттерн, чтобы секрет не утёк в клиент.
+- **App Router in practice:** where an RSC is genuinely needed and where a Client
+  Component is; how to keep server code out of the client bundle (the `api` /
+  `api.server` split).
+- **Next.js 16 ≠ what came before:** `params`/`searchParams` are promises now, the
+  `priority` prop of `next/image` is deprecated (use `loading="eager"`/`preload`), and in
+  Tailwind v4 the class-based dark theme is configured through `@custom-variant`. The
+  habit of writing from memory had to be replaced with reading the docs before the code.
+- **Hydration is about server and client agreeing:** theme and auth state (the session
+  resolves on the client) need a careful initial render, otherwise React complains and the
+  UI flickers.
+- **Auth and per-user data:** sessions in httpOnly cookies, checks close to the data (DAL
+  + API routes, not just layout/proxy), open-redirect protection, and moving the old
+  `localStorage` favorites to the server without losing anything on first sign-in.
+- **URL as state:** filters and search in `searchParams` — sharing and history for free.
+- **Secure by default:** the proxy pattern, so the secret never leaks to the client.
 
-## Методология
+## Methodology
 
-Проект строился методом **tracer bullet** из «The Pragmatic Programmer»: сначала тонкий
-сквозной срез через все слои, затем наращивание функционала фазами. Полный план и статус —
-в [`PLAN.md`](./PLAN.md).
+The project was built with the **tracer bullet** approach from "The Pragmatic Programmer":
+first a thin end-to-end slice through every layer, then features grown in phases. The full
+plan and status live in [`PLAN.md`](./PLAN.md).
 
 ---
 
-Данные предоставлены [TMDB](https://www.themoviedb.org/), но продукт не одобрен и не
-сертифицирован TMDB.
+Data provided by [TMDB](https://www.themoviedb.org/); this product is not endorsed or
+certified by TMDB.

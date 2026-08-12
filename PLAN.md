@@ -1,63 +1,68 @@
 
-# 🎬 Movie Explorer — план проекта
+# 🎬 Movie Explorer — project plan
 
-Pet-проект для frontend-портфолио. Веб-приложение для поиска фильмов на публичном API
-[TMDB](https://www.themoviedb.org/). Цель — не «ещё одно учебное задание», а законченный
-продукт с живой ссылкой.
+A pet project for a frontend portfolio. A web app for searching movies through the public
+[TMDB](https://www.themoviedb.org/) API. The goal is not "one more tutorial exercise" but
+a finished product with a live link.
 
-Методология — **tracer bullet** (из «The Pragmatic Programmer»): сначала прошиваем тонкий,
-но **сквозной** срез через все слои (браузер → страница → серверный прокси → TMDB → рендер →
-деплой), затем наращиваем функционал. Каждая фаза — рабочий вертикальный срез, который можно
-задеплоить и показать. **Деплоим с Фазы 0.**
+The methodology is **tracer bullet** (from "The Pragmatic Programmer"): first wire a thin
+but **end-to-end** slice through every layer (browser → page → server proxy → TMDB →
+render → deploy), then grow features on top. Every phase is a working vertical slice that
+can be deployed and shown. **We deploy from Phase 0.**
 
 ---
 
-## Что проект демонстрирует
+## What the project demonstrates
 
-| Навык | Где в проекте |
+| Skill | Where in the project |
 |---|---|
-| Next.js App Router (RSC + Client Components) | Главная/детали — серверные, поиск/избранное — клиентские |
-| TypeScript | Типы для API-ответов TMDB, пропсов, стора |
-| Работа с API + безопасность | Route Handler как прокси, ключ только на сервере |
-| UX-состояния | loading (skeleton), error, empty, 404 |
-| Производительность | SSR, `next/image`, кэш fetch, бесконечный скролл |
-| Адаптив + тема | mobile-first, тёмная тема |
-| Чистая архитектура | разделение api/ui/features, переиспользуемые компоненты |
+| Next.js App Router (RSC + Client Components) | Home/detail are server-side, search/favorites are client-side |
+| TypeScript | Types for TMDB API responses, props, store |
+| API work + security | Route Handler as a proxy, key stays on the server |
+| UX states | loading (skeleton), error, empty, 404 |
+| Performance | SSR, `next/image`, fetch cache, infinite scroll |
+| Responsive + theming | mobile-first, dark theme |
+| Clean architecture | api/ui/features split, reusable components |
 
 ---
 
-## Стек
+## Stack
 
-- **Next.js 16 (App Router) + React 19 + TypeScript** — основа
-- **Tailwind CSS** — адаптивная вёрстка
-- **TanStack Query** — кэш, загрузки, ошибки, бесконечный скролл на клиенте
-- **Zustand + persist** — избранное в localStorage
-- **TMDB API** — данные (бесплатный ключ)
-- **shadcn/ui** (опционально) — аккуратные базовые компоненты
-- **Vercel** — деплой
-- **ESLint + Prettier** — единый стиль кода
+- **Next.js 16 (App Router) + React 19 + TypeScript** — the foundation
+- **Tailwind CSS** — responsive layout
+- **TanStack Query** — cache, loading, errors, infinite scroll on the client
+- **PostgreSQL + Drizzle ORM** — accounts and per-user favorites (Phase 7; originally
+  planned as Zustand + persist in localStorage, see Phase 5)
+- **Better Auth** — email + password, session in an httpOnly cookie
+- **TMDB API** — the data (free key)
+- **Vercel** — deployment
+- **ESLint** — code style
 
-> Ключевая фишка Next: Route Handler `app/api/tmdb/[...path]` как прокси к TMDB.
-> Клиент никогда не видит API-ключ — отдельный плюс на собеседовании.
+> The key Next trick: the Route Handler `app/api/tmdb/[...path]` as a proxy to TMDB.
+> The client never sees the API key — a nice thing to point at in an interview.
 
 ---
 
-## Целевая структура проекта
+## Target project structure
+
+The structure below is the original target from the start of the project. What actually
+shipped is documented in [`README.md`](./README.md); the notable deviations are that
+`store/` disappeared with Phase 7 (favorites moved to the server), and shadcn/ui with its
+`components/ui/` was not needed.
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx              # корневой layout, провайдеры, тема
-│   ├── page.tsx                # главная (RSC) — трендовые
-│   ├── movie/[id]/page.tsx     # детальная (RSC)
-│   ├── search/page.tsx         # результаты поиска
-│   ├── favorites/page.tsx      # избранное (client)
+│   ├── layout.tsx              # root layout, providers, theme
+│   ├── page.tsx                # home (RSC) — trending
+│   ├── movie/[id]/page.tsx     # detail page (RSC)
+│   ├── search/page.tsx         # search results
+│   ├── favorites/page.tsx      # favorites (client)
 │   ├── not-found.tsx           # 404
 │   ├── error.tsx               # error boundary
-│   └── api/tmdb/[...path]/route.ts  # прокси к TMDB (ключ на сервере)
+│   └── api/tmdb/[...path]/route.ts  # TMDB proxy (key on the server)
 │
 ├── components/
-│   ├── ui/                     # Button, Skeleton, Badge... (shadcn)
 │   ├── movie-card.tsx
 │   ├── movie-grid.tsx
 │   ├── search-bar.tsx          # client, debounce
@@ -68,16 +73,12 @@ src/
 │
 ├── features/
 │   └── movies/
-│       ├── api.ts              # функции запросов к /api/tmdb
-│       ├── types.ts            # типы TMDB
-│       └── queries.ts          # хуки TanStack Query
-│
-├── store/
-│   └── favorites.ts            # Zustand + persist
+│       ├── api.ts              # request functions for /api/tmdb
+│       ├── types.ts            # TMDB types
+│       └── queries.ts          # TanStack Query hooks
 │
 ├── lib/
-│   ├── tmdb.ts                 # серверный клиент TMDB (с ключом)
-│   └── utils.ts
+│   └── tmdb.ts                 # server-side TMDB client (with the key)
 │
 └── providers/
     └── query-provider.tsx      # TanStack Query client
@@ -85,130 +86,124 @@ src/
 
 ---
 
-## Фазы (tracer bullet)
+## Phases (tracer bullet)
 
-### ✅ Фаза 0 — Светящийся путь (the tracer round)
-Самый тонкий сквозной срез: проверяем, что вся труба работает.
+### ✅ Phase 0 — The tracer round
+The thinnest end-to-end slice: prove the whole pipe works.
 
 - [x] `create-next-app` (TS, Tailwind, App Router, src/) — Next 16 + React 19, Node 22 (`.nvmrc`)
-- [x] Route Handler `app/api/tmdb/[...path]/route.ts` — прокси к TMDB (ключ на сервере)
-- [x] Серверный клиент `lib/tmdb.ts` (поддержка v4-токена и v3-ключа)
-- [x] Главная (RSC) тянет тренды и рендерит список названий + аккуратное состояние ошибки
-- [x] Добавить реальный ключ TMDB в `.env.local` (твой шаг — нужен аккаунт TMDB)
-- [x] Деплой на Vercel + env-ключ TMDB
+- [x] Route Handler `app/api/tmdb/[...path]/route.ts` — TMDB proxy (key on the server)
+- [x] Server client `lib/tmdb.ts` (supports both the v4 token and the v3 key)
+- [x] Home (RSC) fetches trending and renders a list of titles + a graceful error state
+- [x] Put a real TMDB key into `.env.local` (your step — needs a TMDB account)
+- [x] Deploy to Vercel + the TMDB env key
 
-**Прошивает:** браузер → Next-страница → серверный прокси → TMDB → рендер → интернет.
-**Готово когда:** на проде по ссылке виден список названий. Ключа нет в Network.
-**НЕ делаем:** дизайн, картинки, богатые типы, состояния.
+**Wires up:** browser → Next page → server proxy → TMDB → render → the internet.
+**Done when:** the production link shows a list of titles. The key is absent from Network.
+**NOT doing:** design, images, rich types, states.
 
-### 🚧 Фаза 1 — Настоящая главная
-Тот же путь, но срез становится «продуктовым». Код готов и проходит build;
-остаётся визуальная проверка с ключом и деплой.
+### ✅ Phase 1 — A real home page
+The same path, but the slice becomes "product-grade".
 
-- [x] `MovieCard` + `MovieGrid`, постеры через `next/image`
-- [x] Адаптивная сетка
-- [x] Тёмная тема (`next-themes`) + `Header` + `ThemeToggle`
-- [x] Типы `Movie`, серверный клиент `lib/tmdb.ts`
+- [x] `MovieCard` + `MovieGrid`, posters through `next/image`
+- [x] Responsive grid
+- [x] Dark theme (`next-themes`) + `Header` + `ThemeToggle`
+- [x] `Movie` types, server client `lib/tmdb.ts`
 
-**Готово когда:** главная выглядит как готовый продукт, задеплоена.
-**НЕ делаем:** поиск, фильтры, детали.
+**Done when:** the home page looks like a finished product and is deployed.
+**NOT doing:** search, filters, detail page.
 
-### 🚧 Фаза 2 — Детальная страница
-Новый сквозной срез для одной фичи: клик → данные → экран.
-Код готов и проверен локально на реальных данных; остаётся деплой.
+### ✅ Phase 2 — Detail page
+A new end-to-end slice for one feature: click → data → screen.
 
-- [x] `/movie/[id]` (RSC): постер, описание, рейтинг, жанры
-- [x] Навигация с карточки
-- [x] `generateMetadata` (SEO/превью ссылок)
+- [x] `/movie/[id]` (RSC): poster, overview, rating, genres
+- [x] Navigation from a card
+- [x] `generateMetadata` (SEO/link previews)
 
-**Готово когда:** клик по карточке открывает рабочую страницу фильма на проде.
-**НЕ делаем:** актёров, трейлер, похожие (нарастим в Фазе 6).
+**Done when:** clicking a card opens a working movie page in production.
+**NOT doing:** cast, trailer, similar (grown in Phase 6).
 
-### 🚧 Фаза 3 — Поиск
-Сквозной срез клиентского интерактива.
-Код готов и проверен локально (данные, состояния); остаётся деплой.
+### ✅ Phase 3 — Search
+An end-to-end slice of client-side interaction.
 
-- [x] Подключить TanStack Query (`QueryProvider`)
-- [x] `SearchBar` с debounce
-- [x] Страница `/search` с результатами в `MovieGrid`
+- [x] Wire up TanStack Query (`QueryProvider`)
+- [x] `SearchBar` with debounce
+- [x] `/search` page with results in `MovieGrid`
 
-**Готово когда:** поиск по названию работает на проде.
-**НЕ делаем:** бесконечный скролл, фильтры.
+**Done when:** searching by title works in production.
+**NOT doing:** infinite scroll, filters.
 
-### 🚧 Фаза 4 — Лента: бесконечный скролл + фильтры
-Углубляем поиск/ленту до боевого состояния.
-Код готов и проверен локально (фильтры, пагинация, URL); остаётся деплой.
-Реализовано на новой странице `/discover` (`discover/movie`); поиск тоже
-переведён на бесконечную ленту через переиспользуемый `InfiniteMovieGrid`.
+### ✅ Phase 4 — Feed: infinite scroll + filters
+Deepen search/feed to production quality. Implemented on a new `/discover` page
+(`discover/movie`); search moved to the same infinite feed through the reusable
+`InfiniteMovieGrid`.
 
 - [x] `useInfiniteQuery` + `IntersectionObserver`
-- [x] Фильтры: жанр / год / сортировка
-- [x] Синхронизация фильтров с URL (`searchParams`)
-- [x] Сброс фильтров
+- [x] Filters: genre / year / sorting
+- [x] Filters synced with the URL (`searchParams`)
+- [x] Reset filters
 
-**Готово когда:** лента бесконечно листается, фильтры меняют URL и результат.
+**Done when:** the feed scrolls infinitely and filters change both URL and results.
 
-### 🚧 Фаза 5 — Избранное
-Сквозной срез состояния клиента + персист.
-Код готов и проверен в реальном браузере (add/remove/persist, без hydration-ошибок);
-остаётся деплой.
+### ✅ Phase 5 — Favorites
+An end-to-end slice of client state + persistence.
 
 - [x] Zustand store + `persist` (localStorage)
-- [x] `FavoriteButton` на карточке и деталях
-- [x] Страница `/favorites`
-- [x] Защита от hydration-ошибок (mounted-флаг)
+- [x] `FavoriteButton` on the card and the detail page
+- [x] `/favorites` page
+- [x] Guard against hydration errors (mounted flag)
 
-**Готово когда:** избранное добавляется/убирается и переживает перезагрузку.
-**НЕ делаем:** авторизацию/БД (stretch).
+**Done when:** favorites can be added/removed and survive a reload.
+**NOT doing:** auth/DB (stretch).
 
-### 🚧 Фаза 6 — Достройка деталей и полировка
-Возвращаемся и дорисовываем отложенное. Код готов; остаётся деплой (live-ссылка).
+### ✅ Phase 6 — Finishing the detail page and polish
+Come back and fill in what was deferred.
 
-- [x] В детали: актёрский состав, трейлер (YouTube, ленивый), похожие фильмы
-- [x] Состояния везде: skeleton (`loading.tsx`) / `error.tsx` / empty / `not-found.tsx`
-- [x] a11y: alt, фокус, контраст
-- [x] Чистка ESLint (0 ошибок). Lighthouse: a11y/best-practices/SEO 98–100 на всех
-      страницах; perf — деталь 90, главная ~88–91, каталог ~80–86 (mobile+throttling,
-      живой TMDB). Каталог ниже из-за клиентской загрузки — SSR первой страницы можно
-      добавить как оптимизацию.
-- [x] README: стек, скриншоты, «чему научился» (live-ссылку добавить после деплоя)
+- [x] Detail page: cast, trailer (YouTube, lazy), similar movies
+- [x] States everywhere: skeleton (`loading.tsx`) / `error.tsx` / empty / `not-found.tsx`
+- [x] a11y: alt, focus, contrast
+- [x] ESLint clean (0 errors). Lighthouse: a11y/best-practices/SEO 98–100 on every page;
+      perf — detail 90, home ~88–91, discover ~80–86 (mobile + throttling, live TMDB).
+      Discover is lower because it loads client-side — SSR of the first page is a possible
+      optimization.
+- [x] README: stack, screenshots, "what I learned"
 
-**Готово когда:** все состояния обработаны, Lighthouse зелёный, README готов.
+**Done when:** every state is handled, Lighthouse is green, the README is ready.
 
-### ✅ Фаза 7 — Аккаунты и серверное избранное
-Избранное перестаёт быть «на этом браузере» и становится персональным: логин + БД.
+### ✅ Phase 7 — Accounts and server-side favorites
+Favorites stop being "on this browser" and become personal: login + database.
 
-- [x] PostgreSQL (локально в Docker, прод — Neon) + Drizzle ORM, миграции
-- [x] Аутентификация Better Auth (email + пароль), сессия в httpOnly-cookie
-- [x] Таблица `favorites` с `UNIQUE(user_id, movie_id)`; API `/api/favorites` (+ `/import`) под сессией
-- [x] Избранное на TanStack Query с оптимистичным toggle (вместо Zustand + localStorage)
-- [x] Экраны `/login` и `/register`, состояние пользователя в шапке (`AuthNav`)
-- [x] Защита: `proxy.ts` (оптимистичный редирект) + DAL `requireUser` (проверка у данных)
-- [x] Разовый перенос старого избранного из localStorage на сервер при первом входе
+- [x] PostgreSQL (Docker locally, Neon in production) + Drizzle ORM, migrations
+- [x] Better Auth authentication (email + password), session in an httpOnly cookie
+- [x] `favorites` table with `UNIQUE(user_id, movie_id)`; `/api/favorites` (+ `/import`) under the session
+- [x] Favorites on TanStack Query with an optimistic toggle (replacing Zustand + localStorage)
+- [x] `/login` and `/register` screens, user state in the header (`AuthNav`)
+- [x] Protection: `proxy.ts` (optimistic redirect) + DAL `requireUser` (check next to the data)
+- [x] One-off transfer of old localStorage favorites to the server on first sign-in
 
-**Готово когда:** у каждого пользователя своё избранное; изоляция проверена end-to-end;
-prod-build зелёный.
-**Почему Better Auth, а не NextAuth:** современнее, рекомендован в доках Next 16, сам
-генерирует Drizzle-схему, меньше кода под email + пароль.
+**Done when:** every user has their own favorites; isolation verified end-to-end; the
+production build is green.
+**Why Better Auth and not NextAuth:** more modern, recommended by the Next 16 docs,
+generates the Drizzle schema itself, less code for email + password.
 
 ---
 
-## Stretch (если останется время)
+## Stretch (if time allows)
 
-- [ ] Сериалы (TV) в дополнение к фильмам
-- [x] Авторизация (Better Auth) + избранное в БД — **сделано, см. Фаза 7**
-- [ ] Тесты (Vitest + React Testing Library) на 2–3 компонента
+- [ ] TV shows in addition to movies
+- [x] Auth (Better Auth) + favorites in the database — **done, see Phase 7**
+- [ ] Tests (Vitest + React Testing Library) for 2–3 components
 - [ ] PWA
 
 ---
 
-## Чек-лист качества (отличает от «учебного»)
+## Quality checklist (what separates this from a tutorial)
 
-- [ ] Везде обработаны loading / error / empty
-- [ ] Нет утечки API-ключа в клиент (проверить Network)
-- [ ] Адаптив от 320px
-- [ ] `next/image` с правильными размерами, нет layout shift
-- [ ] Тёмная тема без «мигания» при загрузке
-- [ ] Осмысленные коммиты (feat/fix/refactor), а не один «init»
-- [x] README с live-ссылкой и скриншотами
-- [x] Деплой работает; открыть с телефона — проверить вручную
+- [x] loading / error / empty handled everywhere
+- [x] No API key leaking to the client (verified in Network)
+- [x] Responsive from 320px
+- [x] `next/image` with correct sizes, no layout shift
+- [x] Dark theme with no flash on load
+- [x] Meaningful commits (feat/fix/refactor), not a single "init"
+- [x] README with a live link and screenshots
+- [x] Deployment works; opening it on a phone — check manually
