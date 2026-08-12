@@ -3,8 +3,8 @@ import { ThemeToggle } from "./theme-toggle";
 import { AuthNav } from "./auth-nav";
 
 /**
- * Шапка сайта: бренд-ссылка на главную и переключатель темы.
- * Прилипает к верху и слегка размывает фон под собой при скролле контента.
+ * Site header: brand link to the home page and the theme toggle.
+ * Sticks to the top and slightly blurs the content scrolling underneath.
  */
 export function Header() {
   return (
@@ -22,19 +22,19 @@ export function Header() {
             href="/discover"
             className="rounded-md px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
           >
-            Каталог
+            Discover
           </Link>
           <Link
             href="/search"
             className="rounded-md px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
           >
-            Поиск
+            Search
           </Link>
           <Link
             href="/favorites"
             className="rounded-md px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
           >
-            Избранное
+            Favorites
           </Link>
           <AuthNav />
           <ThemeToggle />

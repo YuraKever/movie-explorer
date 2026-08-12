@@ -6,11 +6,11 @@ import { favorites } from "@/lib/db/favorites-schema";
 import type { MovieCardData } from "@/features/movies/types";
 
 /**
- * Серверные операции над избранным (только сервер — тянет клиент БД).
- * Клиент ходит сюда через route handlers `/api/favorites/*`.
+ * Server-side favorites operations (server only — pulls in the DB client).
+ * The browser reaches them through the `/api/favorites/*` route handlers.
  */
 
-/** Валидация входного среза фильма из тела запроса. */
+/** Validation for the incoming movie slice from a request body. */
 export const movieCardSchema = z.object({
   id: z.number().int(),
   title: z.string().min(1),
@@ -44,7 +44,7 @@ function toValues(userId: string, movie: MovieCardInput) {
   };
 }
 
-/** Избранное пользователя, свежие — первыми. */
+/** A user's favorites, newest first. */
 export async function listFavorites(userId: string): Promise<MovieCardData[]> {
   const rows = await db
     .select()
@@ -54,7 +54,7 @@ export async function listFavorites(userId: string): Promise<MovieCardData[]> {
   return rows.map(toCard);
 }
 
-/** Добавить фильм. Повторное добавление того же — no-op (UNIQUE). */
+/** Add a movie. Adding the same one twice is a no-op (UNIQUE). */
 export async function addFavorite(userId: string, movie: MovieCardInput) {
   await db
     .insert(favorites)
@@ -62,14 +62,14 @@ export async function addFavorite(userId: string, movie: MovieCardInput) {
     .onConflictDoNothing({ target: [favorites.userId, favorites.movieId] });
 }
 
-/** Убрать фильм из избранного. */
+/** Remove a movie from favorites. */
 export async function removeFavorite(userId: string, movieId: number) {
   await db
     .delete(favorites)
     .where(and(eq(favorites.userId, userId), eq(favorites.movieId, movieId)));
 }
 
-/** Массовый импорт (миграция из localStorage). Дубли игнорируются. */
+/** Bulk import (migration from localStorage). Duplicates are ignored. */
 export async function importFavorites(userId: string, movies: MovieCardInput[]) {
   if (movies.length === 0) return;
   await db

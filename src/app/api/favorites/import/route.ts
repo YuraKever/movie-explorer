@@ -7,23 +7,23 @@ import {
   movieCardSchema,
 } from "@/features/favorites/api.server";
 
-/** Разумный потолок на один импорт, чтобы не залить БД мусором. */
+/** Sane ceiling for a single import, so the DB cannot be flooded. */
 const importSchema = z.array(movieCardSchema).max(500);
 
 /**
- * POST /api/favorites/import — массовый перенос избранного из localStorage.
- * Возвращает актуальный список (для прайминга кеша на клиенте).
+ * POST /api/favorites/import — bulk transfer of favorites from localStorage.
+ * Returns the current list (to prime the client cache).
  */
 export async function POST(request: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json().catch(() => null);
   const parsed = importSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   await importFavorites(session.user.id, parsed.data);

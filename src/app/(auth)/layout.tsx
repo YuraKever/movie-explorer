@@ -1,6 +1,6 @@
 /**
- * Общий каркас для /login и /register: узкая центрированная колонка.
- * Route group (auth) не влияет на URL — только группирует эти экраны.
+ * Shared shell for /login and /register: a narrow centered column.
+ * The (auth) route group does not affect the URL — it only groups these screens.
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

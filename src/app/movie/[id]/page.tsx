@@ -12,18 +12,18 @@ import { posterUrl, backdropUrl } from "@/lib/tmdb";
 type Props = { params: Promise<{ id: string }> };
 
 /**
- * Метаданные страницы фильма для SEO и превью ссылок (Open Graph).
- * Тот же запрос, что и в самой странице, — Next дедуплицирует его.
- * Если фильма нет, отдаём нейтральный заголовок (страница всё равно уйдёт в 404).
+ * Movie page metadata for SEO and link previews (Open Graph).
+ * Same request as the page itself — Next dedupes it.
+ * If the movie is missing we return a neutral title (the page 404s anyway).
  */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const movie = await getMovieDetail(id).catch(() => null);
-  if (!movie) return { title: "Фильм не найден" };
+  if (!movie) return { title: "Movie not found" };
 
   const image = posterUrl(movie.poster_path, "w500");
   const description =
-    movie.overview?.slice(0, 200) || `Информация о фильме «${movie.title}».`;
+    movie.overview?.slice(0, 200) || `About ${movie.title}.`;
 
   return {
     title: movie.title,
@@ -40,8 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function MoviePage({ params }: Props) {
   const { id } = await params;
 
-  // Любая ошибка запроса (в т.ч. несуществующий id → 404 от TMDB) ведёт на
-  // страницу 404. Разделение сетевых ошибок и «не найдено» — задача Фазы 6.
+  // Any request failure (including an unknown id → 404 from TMDB) leads to the
+  // 404 page. Telling network errors apart from "not found" is still pending.
   const movie = await getMovieDetail(id).catch(() => null);
   if (!movie) notFound();
 
@@ -64,7 +64,7 @@ export default async function MoviePage({ params }: Props) {
 
   return (
     <main className="relative">
-      {/* Кадр-фон: мягко затухает вниз, служит только атмосферой */}
+      {/* Backdrop: fades out downwards, purely atmospheric */}
       {backdrop && (
         <div
           className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 overflow-hidden opacity-30 [mask-image:linear-gradient(to_bottom,black,transparent)]"
@@ -79,16 +79,16 @@ export default async function MoviePage({ params }: Props) {
           href="/"
           className="inline-flex items-center gap-1 text-sm text-foreground/60 transition-colors hover:text-foreground"
         >
-          ← Назад к трендам
+          ← Back to trending
         </Link>
 
         <div className="mt-6 grid gap-8 sm:grid-cols-[220px_1fr]">
-          {/* Постер */}
+          {/* Poster */}
           <div className="relative aspect-[2/3] w-full max-w-[220px] overflow-hidden rounded-xl bg-black/5 ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10">
             {poster ? (
               <Image
                 src={poster}
-                alt={`Постер фильма «${movie.title}»`}
+                alt={`${movie.title} poster`}
                 fill
                 sizes="220px"
                 loading="eager"
@@ -105,7 +105,7 @@ export default async function MoviePage({ params }: Props) {
             )}
           </div>
 
-          {/* Информация */}
+          {/* Info */}
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {movie.title}
@@ -149,17 +149,17 @@ export default async function MoviePage({ params }: Props) {
             )}
 
             <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-foreground/50">
-              Описание
+              Overview
             </h2>
             <p className="mt-2 leading-relaxed text-foreground/90">
-              {movie.overview || "Описание отсутствует."}
+              {movie.overview || "No overview available."}
             </p>
           </div>
         </div>
 
         {trailer && (
           <section className="mt-10">
-            <h2 className="mb-3 text-xl font-bold tracking-tight">Трейлер</h2>
+            <h2 className="mb-3 text-xl font-bold tracking-tight">Trailer</h2>
             <TrailerEmbed
               videoKey={trailer.key}
               title={movie.title}
@@ -170,14 +170,14 @@ export default async function MoviePage({ params }: Props) {
 
         {cast.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-3 text-xl font-bold tracking-tight">В ролях</h2>
+            <h2 className="mb-3 text-xl font-bold tracking-tight">Cast</h2>
             <CastRow cast={cast} />
           </section>
         )}
 
         {similar.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-4 text-xl font-bold tracking-tight">Похожие</h2>
+            <h2 className="mb-4 text-xl font-bold tracking-tight">Similar</h2>
             <MovieGrid movies={similar} />
           </section>
         )}
@@ -186,11 +186,11 @@ export default async function MoviePage({ params }: Props) {
   );
 }
 
-/** Минуты → «2 ч 15 мин». */
+/** Minutes → "2h 15m". */
 function formatRuntime(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h && m) return `${h} ч ${m} мин`;
-  if (h) return `${h} ч`;
-  return `${m} мин`;
+  if (h && m) return `${h}h ${m}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
 }

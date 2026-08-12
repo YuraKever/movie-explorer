@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · Movie Explorer",
   },
   description:
-    "Поиск и просмотр фильмов на данных TMDB: тренды, детали, избранное.",
+    "Browse and search movies powered by TMDB: trending, details, favorites.",
 };
 
 export default function RootLayout({
@@ -30,9 +30,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning: next-themes меняет класс на <html> до гидрации.
+    // suppressHydrationWarning: next-themes swaps the class on <html> before hydration.
     <html
-      lang="ru"
+      lang="en"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

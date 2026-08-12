@@ -10,9 +10,9 @@ const inputClass =
   "w-full rounded-lg border border-black/10 bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-amber-500 dark:border-white/15";
 
 /**
- * Форма входа (email + пароль) на клиенте Better Auth. При успехе переносим
- * избранное из localStorage на сервер (разовая миграция) и уходим на `redirectTo`.
- * `router.refresh()` — чтобы серверные компоненты увидели новую сессию.
+ * Sign-in form (email + password) on the Better Auth client. On success we move
+ * favorites from localStorage to the server (one-off migration) and navigate to
+ * `redirectTo`. `router.refresh()` — so server components see the new session.
  */
 export function LoginForm({ redirectTo = "/favorites" }: { redirectTo?: string }) {
   const router = useRouter();
@@ -28,7 +28,7 @@ export function LoginForm({ redirectTo = "/favorites" }: { redirectTo?: string }
 
     const { error } = await authClient.signIn.email({ email, password });
     if (error) {
-      setError(error.message ?? "Не удалось войти. Проверь почту и пароль.");
+      setError(error.message ?? "Could not sign in. Check your email and password.");
       setPending(false);
       return;
     }
@@ -58,7 +58,7 @@ export function LoginForm({ redirectTo = "/favorites" }: { redirectTo?: string }
 
       <div className="space-y-1.5">
         <label htmlFor="password" className="block text-sm font-medium">
-          Пароль
+          Password
         </label>
         <input
           id="password"
@@ -83,16 +83,16 @@ export function LoginForm({ redirectTo = "/favorites" }: { redirectTo?: string }
         disabled={pending}
         className="w-full rounded-lg bg-amber-500 px-3 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-amber-400 disabled:opacity-60"
       >
-        {pending ? "Входим…" : "Войти"}
+        {pending ? "Signing in…" : "Sign in"}
       </button>
 
       <p className="text-center text-sm text-foreground/60">
-        Нет аккаунта?{" "}
+        No account yet?{" "}
         <Link
           href="/register"
           className="text-amber-600 hover:underline dark:text-amber-400"
         >
-          Зарегистрироваться
+          Create one
         </Link>
       </p>
     </form>

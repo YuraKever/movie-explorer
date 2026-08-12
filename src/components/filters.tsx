@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import type { Genre, SortOption } from "@/features/movies/types";
 
 const SORTS: { value: SortOption; label: string }[] = [
-  { value: "popularity.desc", label: "Популярные" },
-  { value: "vote_average.desc", label: "По рейтингу" },
-  { value: "primary_release_date.desc", label: "Новинки" },
-  { value: "revenue.desc", label: "По сборам" },
+  { value: "popularity.desc", label: "Popular" },
+  { value: "vote_average.desc", label: "Top rated" },
+  { value: "primary_release_date.desc", label: "Newest" },
+  { value: "revenue.desc", label: "Highest grossing" },
 ];
 
 const DEFAULT_SORT: SortOption = "popularity.desc";
@@ -19,10 +19,10 @@ type Props = {
 };
 
 /**
- * Панель фильтров каталога. Источник правды — URL: каждое изменение пишет
- * `searchParams` через `router.replace`, поэтому подборку можно расшарить и она
- * переживает перезагрузку. Год по умолчанию не ставим (sort — единственный
- * фильтр со значением по умолчанию, его в URL не пишем ради чистых ссылок).
+ * Discover filter bar. The URL is the source of truth: every change writes
+ * `searchParams` via `router.replace`, so a selection is shareable and survives
+ * a reload. Year has no default (sort is the only filter with one, and it is
+ * kept out of the URL to keep links clean).
  */
 export function Filters({ genres, current, maxYear }: Props) {
   const router = useRouter();
@@ -51,12 +51,12 @@ export function Filters({ genres, current, maxYear }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <select
-        aria-label="Жанр"
+        aria-label="Genre"
         value={current.genre ?? ""}
         onChange={(e) => apply({ genre: e.target.value || undefined })}
         className={selectClass}
       >
-        <option value="">Все жанры</option>
+        <option value="">All genres</option>
         {genres.map((genre) => (
           <option key={genre.id} value={String(genre.id)}>
             {genre.name}
@@ -65,12 +65,12 @@ export function Filters({ genres, current, maxYear }: Props) {
       </select>
 
       <select
-        aria-label="Год выпуска"
+        aria-label="Release year"
         value={current.year ?? ""}
         onChange={(e) => apply({ year: e.target.value || undefined })}
         className={selectClass}
       >
-        <option value="">Любой год</option>
+        <option value="">Any year</option>
         {years.map((year) => (
           <option key={year} value={String(year)}>
             {year}
@@ -79,7 +79,7 @@ export function Filters({ genres, current, maxYear }: Props) {
       </select>
 
       <select
-        aria-label="Сортировка"
+        aria-label="Sort by"
         value={current.sort ?? DEFAULT_SORT}
         onChange={(e) => apply({ sort: e.target.value })}
         className={selectClass}
@@ -97,7 +97,7 @@ export function Filters({ genres, current, maxYear }: Props) {
           onClick={() => router.replace("/discover", { scroll: false })}
           className="text-sm text-foreground/60 underline-offset-4 transition-colors hover:text-foreground hover:underline"
         >
-          Сбросить
+          Reset
         </button>
       )}
     </div>

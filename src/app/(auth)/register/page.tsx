@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { RegisterForm } from "@/components/auth/register-form";
 
-export const metadata: Metadata = { title: "Регистрация" };
+export const metadata: Metadata = { title: "Sign up" };
 
-/** Защита от open-redirect: пускаем только внутренние пути (одиночный ведущий /). */
+/** Open-redirect guard: only internal paths pass (a single leading /). */
 function safeRedirect(target: string | undefined): string {
   return target && /^\/(?!\/)/.test(target) ? target : "/favorites";
 }
@@ -17,9 +17,9 @@ export default async function RegisterPage({
 
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight">Регистрация</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Sign up</h1>
       <p className="mb-6 mt-1 text-sm text-foreground/60">
-        Создай аккаунт — избранное будет храниться за тобой.
+        Create an account — your favorites will stay with you.
       </p>
       <RegisterForm redirectTo={safeRedirect(redirect)} />
     </>

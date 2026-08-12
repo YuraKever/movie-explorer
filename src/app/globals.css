@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 /*
- * Tailwind v4 включает `dark:` по prefers-color-scheme. Нам нужен ручной
- * переключатель, поэтому переопределяем вариант на класс `.dark`, который
- * next-themes вешает на <html>. Теперь `dark:` реагирует на класс, а не на ОС.
+ * Tailwind v4 drives `dark:` off prefers-color-scheme. We need a manual toggle,
+ * so the variant is redefined to the `.dark` class that next-themes puts on
+ * <html>. Now `dark:` reacts to the class rather than to the OS setting.
  */
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -1,4 +1,4 @@
-/** Скелет детальной страницы под её реальный макет (постер + колонка текста). */
+/** Detail-page skeleton matching its real layout (poster + text column). */
 export default function Loading() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">

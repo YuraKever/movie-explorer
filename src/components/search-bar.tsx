@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 /**
- * Поле поиска с debounce. Источник правды — URL (`/search?query=`), поэтому
- * результат можно расшарить и он переживает перезагрузку. Ввод хранится в
- * локальном состоянии (отзывчивость), а в URL уходит через 350 мс после паузы.
+ * Debounced search field. The URL is the source of truth (`/search?query=`), so
+ * a result is shareable and survives a reload. Input lives in local state (for
+ * responsiveness) and lands in the URL 350 ms after the user stops typing.
  *
- * `initialQuery` — значение из URL на момент рендера страницы. Сравнение с ним
- * гасит лишнюю навигацию на монтировании и предотвращает цикл.
+ * `initialQuery` — the URL value at page render time. Comparing against it
+ * suppresses a redundant navigation on mount and prevents a loop.
  */
 export function SearchBar({ initialQuery }: { initialQuery: string }) {
   const router = useRouter();
@@ -17,7 +17,7 @@ export function SearchBar({ initialQuery }: { initialQuery: string }) {
 
   useEffect(() => {
     const q = value.trim();
-    if (q === initialQuery) return; // уже синхронно с URL
+    if (q === initialQuery) return; // already in sync with the URL
 
     const timer = setTimeout(() => {
       router.replace(q ? `/search?query=${encodeURIComponent(q)}` : "/search", {
@@ -47,8 +47,8 @@ export function SearchBar({ initialQuery }: { initialQuery: string }) {
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Название фильма…"
-        aria-label="Поиск фильмов"
+        placeholder="Movie title…"
+        aria-label="Search movies"
         autoFocus
         className="w-full rounded-lg border border-black/10 bg-background py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-amber-500 dark:border-white/15"
       />

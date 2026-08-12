@@ -1,15 +1,15 @@
 /**
- * Серверный клиент TMDB. Используется ТОЛЬКО на сервере (RSC, Route Handlers):
- * ключ/токен берётся из переменных окружения и никогда не попадает в браузер.
+ * Server-side TMDB client. Used ONLY on the server (RSC, Route Handlers): the
+ * key/token comes from env vars and never reaches the browser.
  *
- * Поддерживаются два способа авторизации TMDB:
- *  - TMDB_ACCESS_TOKEN — v4 Read Access Token (рекомендуется), уходит в заголовок Bearer
- *  - TMDB_API_KEY      — v3 API key, уходит в query-параметр api_key
+ * Two TMDB auth methods are supported:
+ *  - TMDB_ACCESS_TOKEN — v4 Read Access Token (preferred), sent as a Bearer header
+ *  - TMDB_API_KEY      — v3 API key, sent as the api_key query param
  */
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
 type TmdbFetchOptions = {
-  /** Сколько секунд кэшировать ответ (Next.js fetch cache). По умолчанию 1 час. */
+  /** How many seconds to cache the response (Next.js fetch cache). Default 1 hour. */
   revalidate?: number;
 };
 
@@ -25,7 +25,7 @@ function buildAuth(): { headers: Record<string, string>; apiKeyParam?: string } 
   }
 
   throw new Error(
-    "Не заданы креды TMDB. Укажи TMDB_ACCESS_TOKEN (v4) или TMDB_API_KEY (v3) в .env.local",
+    "TMDB credentials are missing. Set TMDB_ACCESS_TOKEN (v4) or TMDB_API_KEY (v3) in .env.local",
   );
 }
 
@@ -49,22 +49,22 @@ export async function tmdbFetch<T>(
 
   if (!res.ok) {
     throw new Error(
-      `TMDB ответил ${res.status} ${res.statusText} на /${path.replace(/^\//, "")}`,
+      `TMDB responded ${res.status} ${res.statusText} for /${path.replace(/^\//, "")}`,
     );
   }
 
   return res.json() as Promise<T>;
 }
 
-/** Базовый URL для картинок TMDB (постеры, бэкдропы). */
+/** Base URL for TMDB images (posters, backdrops). */
 export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 
 export type PosterSize = "w185" | "w342" | "w500" | "w780";
 
 /**
- * Строит URL постера нужного размера. Возвращает null, если постера нет, —
- * компонент покажет заглушку вместо битой картинки.
- * Хост image.tmdb.org разрешён в next.config.ts (images.remotePatterns).
+ * Builds a poster URL of the requested size. Returns null when there is no
+ * poster — the component shows a placeholder instead of a broken image.
+ * The image.tmdb.org host is allowed in next.config.ts (images.remotePatterns).
  */
 export function posterUrl(
   path: string | null | undefined,
@@ -75,7 +75,7 @@ export function posterUrl(
 
 export type BackdropSize = "w780" | "w1280" | "original";
 
-/** URL кадра-фона (backdrop) фильма. null, если фона нет. */
+/** URL of a movie's backdrop. null when there is none. */
 export function backdropUrl(
   path: string | null | undefined,
   size: BackdropSize = "w1280",
@@ -85,7 +85,7 @@ export function backdropUrl(
 
 export type ProfileSize = "w45" | "w185" | "h632";
 
-/** URL фото актёра. null, если фото нет. */
+/** URL of a cast member's photo. null when there is none. */
 export function profileUrl(
   path: string | null | undefined,
   size: ProfileSize = "w185",

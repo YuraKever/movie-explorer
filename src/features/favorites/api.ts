@@ -1,14 +1,14 @@
 import type { MovieCardData } from "@/features/movies/types";
 
 /**
- * Клиентские запросы к нашему API избранного (`/api/favorites/*`).
- * Сессия передаётся автоматически через httpOnly-cookie Better Auth.
+ * Client-side requests to our favorites API (`/api/favorites/*`).
+ * The session travels automatically in Better Auth's httpOnly cookie.
  */
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `Запрос не удался (${res.status})`);
+    throw new Error(body?.error ?? `Request failed (${res.status})`);
   }
   return res.json() as Promise<T>;
 }

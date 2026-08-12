@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Провайдер TanStack Query. Клиентский: держит единственный QueryClient на
- * всё приложение. `useState`-инициализатор гарантирует, что клиент создаётся
- * один раз на монтирование, а не на каждый рендер.
+ * TanStack Query provider. Client-side: holds a single QueryClient for the whole
+ * app. The `useState` initializer guarantees the client is created once per
+ * mount rather than on every render.
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";

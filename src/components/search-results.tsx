@@ -4,8 +4,8 @@ import { useSearchMovies } from "@/features/movies/queries";
 import { InfiniteMovieGrid } from "@/components/infinite-movie-grid";
 
 /**
- * Результаты поиска: та же бесконечная сетка, что и в каталоге, но по запросу.
- * Пустую строку не ищем — показываем подсказку.
+ * Search results: the same infinite grid as discover, driven by the query.
+ * An empty string is not searched — we show a hint instead.
  */
 export function SearchResults({ query }: { query: string }) {
   const q = query.trim();
@@ -14,7 +14,7 @@ export function SearchResults({ query }: { query: string }) {
   if (!q) {
     return (
       <p className="py-16 text-center text-foreground/60">
-        Введите название фильма, чтобы начать поиск.
+        Type a movie title to start searching.
       </p>
     );
   }
@@ -23,7 +23,7 @@ export function SearchResults({ query }: { query: string }) {
     <div className="mt-6">
       <InfiniteMovieGrid
         query={infinite}
-        emptyMessage={`Ничего не найдено по «${q}».`}
+        emptyMessage={`No results for "${q}".`}
       />
     </div>
   );

@@ -1,13 +1,14 @@
 import type { MovieCardData } from "@/features/movies/types";
 import { importFavoritesRequest } from "./api";
 
-/** Ключ старого хранилища (Zustand persist до появления аккаунтов). */
+/** Key of the old storage (Zustand persist, before accounts existed). */
 const LOCAL_KEY = "movie-explorer:favorites";
 
 /**
- * Разовый перенос избранного из localStorage на сервер. Зовётся после успешного
- * входа/регистрации. localStorage чистим ТОЛЬКО после успешного импорта — если
- * сеть/сервер упали, данные останутся и перенесутся при следующем входе.
+ * One-off transfer of favorites from localStorage to the server. Called after a
+ * successful sign-in/sign-up. localStorage is cleared ONLY after a successful
+ * import — if the network or server fails, the data stays and moves over on the
+ * next sign-in.
  */
 export async function importLocalFavorites(): Promise<void> {
   if (typeof window === "undefined") return;
@@ -17,11 +18,11 @@ export async function importLocalFavorites(): Promise<void> {
 
   let items: MovieCardData[] = [];
   try {
-    // Формат Zustand persist: { state: { items: [...] }, version }.
+    // Zustand persist format: { state: { items: [...] }, version }.
     const parsed = JSON.parse(raw) as { state?: { items?: MovieCardData[] } };
     items = parsed?.state?.items ?? [];
   } catch {
-    window.localStorage.removeItem(LOCAL_KEY); // повреждённые данные — вычищаем
+    window.localStorage.removeItem(LOCAL_KEY); // corrupted data — wipe it
     return;
   }
 
@@ -29,6 +30,6 @@ export async function importLocalFavorites(): Promise<void> {
     if (items.length > 0) await importFavoritesRequest(items);
     window.localStorage.removeItem(LOCAL_KEY);
   } catch {
-    // оставляем localStorage как есть — повторим при следующем входе
+    // leave localStorage as is — we retry on the next sign-in
   }
 }

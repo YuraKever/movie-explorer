@@ -10,10 +10,10 @@ import {
 import { user } from "./auth-schema";
 
 /**
- * Избранное пользователя. Храним тот же минимальный срез фильма (`MovieCardData`),
- * что раньше лежал в localStorage, — чтобы /favorites рисовалась без похода в TMDB.
- * UNIQUE(user_id, movie_id): один фильм у пользователя не дублируется.
- * ON DELETE CASCADE: удалили пользователя — ушло и его избранное.
+ * A user's favorites. We store the same minimal movie slice (`MovieCardData`)
+ * that used to live in localStorage, so /favorites renders without hitting TMDB.
+ * UNIQUE(user_id, movie_id): a movie cannot be duplicated for a user.
+ * ON DELETE CASCADE: deleting a user takes their favorites with it.
  */
 export const favorites = pgTable(
   "favorites",

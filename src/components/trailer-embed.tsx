@@ -4,9 +4,9 @@ import Image from "next/image";
 import { useState } from "react";
 
 /**
- * Трейлер с YouTube. Пока не нажали play — показываем лёгкую «фасадку» (кадр
- * фильма + кнопка), а тяжёлый iframe грузим только по клику. Это бережёт метрики
- * (без стороннего плеера на каждой загрузке страницы).
+ * YouTube trailer. Until play is pressed we show a lightweight facade (a movie
+ * still + a button) and load the heavy iframe only on click. That keeps the
+ * metrics clean — no third-party player on every page load.
  */
 export function TrailerEmbed({
   videoKey,
@@ -25,7 +25,7 @@ export function TrailerEmbed({
         <iframe
           className="absolute inset-0 h-full w-full"
           src={`https://www.youtube.com/embed/${videoKey}?autoplay=1`}
-          title={`Трейлер: ${title}`}
+          title={`Trailer: ${title}`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
@@ -37,7 +37,7 @@ export function TrailerEmbed({
     <button
       type="button"
       onClick={() => setPlaying(true)}
-      aria-label={`Смотреть трейлер: ${title}`}
+      aria-label={`Play trailer: ${title}`}
       className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
     >
       {backdrop && (

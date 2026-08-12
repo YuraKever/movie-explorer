@@ -3,9 +3,9 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 
 /**
- * Клиент Drizzle поверх node-postgres (обычный TCP-драйвер `pg`).
- * Работает и с локальным Postgres из docker-compose, и с Neon в проде —
- * меняется только DATABASE_URL. Пул один на процесс.
+ * Drizzle client on top of node-postgres (the plain TCP `pg` driver).
+ * Works both with the local Postgres from docker-compose and with Neon in
+ * production — only DATABASE_URL changes. One pool per process.
  */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

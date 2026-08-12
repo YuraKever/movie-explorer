@@ -14,15 +14,15 @@ type Props = {
 };
 
 /**
- * Бесконечная сетка фильмов поверх `useInfiniteQuery`. Следующая страница
- * тянется, когда невидимый сентинел приближается к вьюпорту (IntersectionObserver
- * с запасом 600px — подгружаем заранее, без «дёрганья» у самого низа).
+ * Infinite movie grid on top of `useInfiniteQuery`. The next page is fetched
+ * when an invisible sentinel approaches the viewport (IntersectionObserver with
+ * a 600px margin — load ahead of time, no stutter at the very bottom).
  *
- * Переиспользуется и в каталоге, и в поиске: вся разница — какой запрос передан.
+ * Reused by both discover and search: the only difference is the query passed in.
  */
 export function InfiniteMovieGrid({
   query,
-  emptyMessage = "Ничего не найдено.",
+  emptyMessage = "No results.",
 }: Props) {
   const {
     data,
@@ -58,9 +58,9 @@ export function InfiniteMovieGrid({
   if (isError) {
     return (
       <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
-        <p className="font-medium">⚠️ Не удалось загрузить</p>
+        <p className="font-medium">⚠️ Could not load results</p>
         <p className="mt-1 text-foreground/70">
-          {error instanceof Error ? error.message : "Неизвестная ошибка"}
+          {error instanceof Error ? error.message : "Unknown error"}
         </p>
       </div>
     );
@@ -76,24 +76,26 @@ export function InfiniteMovieGrid({
   return (
     <div>
       <p className="mb-4 text-sm text-foreground/60">
-        Найдено: {total.toLocaleString("ru-RU")}
+        {total.toLocaleString("en-US")} results
       </p>
       <MovieGrid movies={movies} priority />
 
-      {/* Сентинел бесконечной прокрутки */}
+      {/* Infinite-scroll sentinel */}
       <div ref={sentinelRef} aria-hidden className="h-px" />
 
       {isFetchingNextPage && (
-        <p className="py-6 text-center text-sm text-foreground/50">Загрузка…</p>
+        <p className="py-6 text-center text-sm text-foreground/50">Loading…</p>
       )}
       {!hasNextPage && (
-        <p className="py-8 text-center text-sm text-foreground/40">Это всё 🎬</p>
+        <p className="py-8 text-center text-sm text-foreground/40">
+          You&apos;ve reached the end 🎬
+        </p>
       )}
     </div>
   );
 }
 
-/** Список без дублей: TMDB иногда повторяет один фильм на разных страницах. */
+/** Deduped list: TMDB sometimes repeats the same movie across pages. */
 function dedupeById(movies: Movie[]): Movie[] {
   const seen = new Set<number>();
   const out: Movie[] = [];

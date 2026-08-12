@@ -1,9 +1,10 @@
 /**
- * Типы TMDB. Описываем только те поля, что реально используем в UI, —
- * ответы TMDB богаче, но узкий тип честнее показывает зависимости кода.
+ * TMDB types. Only the fields the UI actually uses are described — TMDB's
+ * responses are richer, but a narrow type states the code's dependencies
+ * honestly.
  */
 
-/** Фильм в списочных ответах (тренды, поиск, discover). */
+/** A movie in list responses (trending, search, discover). */
 export type Movie = {
   id: number;
   title: string;
@@ -18,7 +19,7 @@ export type Movie = {
   popularity?: number;
 };
 
-/** Обёртка постраничных ответов TMDB (`/trending`, `/search`, `/discover`…). */
+/** Wrapper for paginated TMDB responses (`/trending`, `/search`, `/discover`…). */
 export type PaginatedResponse<T> = {
   page: number;
   results: T[];
@@ -29,19 +30,14 @@ export type PaginatedResponse<T> = {
 export type Genre = { id: number; name: string };
 
 /**
- * Минимум полей, которого достаточно карточке и избранному. И полный `Movie`,
- * и `MovieDetail` структурно подходят сюда, поэтому карточку можно кормить любым.
+ * The minimum a card and favorites need. Both a full `Movie` and a `MovieDetail`
+ * structurally fit here, so the card can be fed either one.
  */
 export type MovieCardData = Pick<
   Movie,
   "id" | "title" | "poster_path" | "release_date" | "vote_average"
 >;
 
-/**
- * Полный ответ TMDB по одному фильму (`/movie/{id}`). Отличается от списочного
- * `Movie`: жанры приходят объектами (`genres`), а не id (`genre_ids`), плюс
- * есть длительность, слоган и т.п. Актёров/трейлер/похожие пока не тянем (Фаза 6).
- */
 export type CastMember = {
   id: number;
   name: string;
@@ -57,13 +53,18 @@ export type Video = {
   official: boolean;
 };
 
+/**
+ * Full TMDB response for a single movie (`/movie/{id}`). Differs from the list
+ * `Movie`: genres arrive as objects (`genres`) rather than ids (`genre_ids`),
+ * plus runtime, tagline and friends.
+ */
 export type MovieDetail = Movie & {
   genres: Genre[];
   runtime: number | null;
   tagline?: string;
   status?: string;
   homepage?: string | null;
-  // Приходят только при append_to_response (см. getMovieDetail).
+  // Present only with append_to_response (see getMovieDetail).
   credits?: { cast: CastMember[] };
   videos?: { results: Video[] };
   similar?: PaginatedResponse<Movie>;
@@ -75,9 +76,9 @@ export type SortOption =
   | "primary_release_date.desc"
   | "revenue.desc";
 
-/** Фильтры каталога (`discover/movie`). Пустые поля не применяются. */
+/** Discover filters (`discover/movie`). Empty fields are not applied. */
 export type DiscoverFilters = {
-  genre?: string; // id жанра строкой
+  genre?: string; // genre id as a string
   year?: string;
   sort?: SortOption;
 };

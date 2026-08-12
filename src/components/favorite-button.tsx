@@ -15,14 +15,15 @@ type Props = {
 };
 
 /**
- * Кнопка «в избранное». Живёт и внутри карточки-ссылки (иконка), и на деталях
- * (с подписью). Избранное теперь на сервере и привязано к аккаунту:
- *  - гость → клик уводит на /login (с возвратом на текущую страницу);
- *  - залогиненный → оптимистичный toggle через TanStack Query.
+ * Favorite toggle. Lives both inside a card link (icon only) and on the detail
+ * page (with a label). Favorites are stored server-side per account:
+ *  - guest → the click leads to /login (returning to the current page);
+ *  - signed in → optimistic toggle through TanStack Query.
  *
- * `active` завязан на сессию: до её загрузки (и на сервере) — false, что совпадает
- * с серверным рендером и не даёт hydration-рассинхрона. Внутри `<Link>` гасим
- * переход (preventDefault/stopPropagation), чтобы клик не открывал фильм.
+ * `active` depends on the session: false until it resolves (and on the server),
+ * which matches the server render and avoids a hydration mismatch. Inside a
+ * `<Link>` we swallow the navigation (preventDefault/stopPropagation) so the
+ * click does not open the movie.
  */
 export function FavoriteButton({ movie, withLabel = false, className = "" }: Props) {
   const router = useRouter();
@@ -46,8 +47,8 @@ export function FavoriteButton({ movie, withLabel = false, className = "" }: Pro
     <button
       type="button"
       aria-pressed={active}
-      aria-label={active ? "Убрать из избранного" : "Добавить в избранное"}
-      title={active ? "Убрать из избранного" : "Добавить в избранное"}
+      aria-label={active ? "Remove from favorites" : "Add to favorites"}
+      title={active ? "Remove from favorites" : "Add to favorites"}
       onClick={onClick}
       className={`inline-flex items-center gap-2 ${className}`}
     >
@@ -62,7 +63,9 @@ export function FavoriteButton({ movie, withLabel = false, className = "" }: Pro
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
       {withLabel && (
-        <span className="text-sm">{active ? "В избранном" : "В избранное"}</span>
+        <span className="text-sm">
+          {active ? "In favorites" : "Add to favorites"}
+        </span>
       )}
     </button>
   );

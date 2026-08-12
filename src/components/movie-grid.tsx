@@ -2,23 +2,21 @@ import type { MovieCardData } from "@/features/movies/types";
 import { MovieCard } from "./movie-card";
 
 /**
- * Адаптивная сетка карточек: 2 колонки на телефоне (от 320px) → 5 на десктопе.
- * Пустой результат обрабатывается здесь же, чтобы вызывающий код не дублировал
- * это состояние на каждой странице (тренды, поиск, избранное).
+ * Responsive card grid: 2 columns on phones (from 320px) → 5 on desktop.
+ * The empty result is handled here so callers do not repeat that state on every
+ * page (trending, search, favorites).
  */
 export function MovieGrid({
   movies,
   priority = false,
 }: {
   movies: MovieCardData[];
-  /** Грузить первый ряд eager — только когда сетка выше сгиба (главная, лента). */
+  /** Load the first row eagerly — only when the grid is above the fold. */
   priority?: boolean;
 }) {
   if (movies.length === 0) {
     return (
-      <p className="py-16 text-center text-foreground/60">
-        Ничего не найдено.
-      </p>
+      <p className="py-16 text-center text-foreground/60">No results.</p>
     );
   }
 

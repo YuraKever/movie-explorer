@@ -4,16 +4,16 @@ import { Filters } from "@/components/filters";
 import { DiscoverFeed } from "@/components/discover-feed";
 import type { DiscoverFilters, SortOption } from "@/features/movies/types";
 
-export const metadata: Metadata = { title: "Каталог" };
+export const metadata: Metadata = { title: "Discover" };
 
 type Props = {
   searchParams: Promise<{ genre?: string; year?: string; sort?: string }>;
 };
 
 /**
- * Каталог с фильтрами и бесконечной лентой. Фильтры читаем из URL на сервере и
- * передаём вниз пропами (без `useSearchParams`). Справочник жанров тянем на
- * сервере — он статичен и хорошо кэшируется.
+ * Catalog with filters and an infinite feed. Filters are read from the URL on
+ * the server and passed down as props (no `useSearchParams`). The genre list is
+ * fetched on the server — it is static and caches well.
  */
 export default async function DiscoverPage({ searchParams }: Props) {
   const { genre, year, sort } = await searchParams;
@@ -29,10 +29,10 @@ export default async function DiscoverPage({ searchParams }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-        Каталог фильмов
+        Discover movies
       </h1>
       <p className="mt-1 text-sm text-foreground/60">
-        Фильтруй по жанру, году и сортировке — лента подгружается по мере прокрутки.
+        Filter by genre, year and sorting — the feed loads as you scroll.
       </p>
 
       <div className="mt-6">

@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import { SearchBar } from "@/components/search-bar";
 import { SearchResults } from "@/components/search-results";
 
-export const metadata: Metadata = { title: "Поиск" };
+export const metadata: Metadata = { title: "Search" };
 
 type Props = { searchParams: Promise<{ query?: string }> };
 
 /**
- * Страница поиска. Запрос читаем из URL на сервере (`searchParams`) и передаём
- * вниз пропом — так обходимся без `useSearchParams` и его Suspense-границы.
- * Сам поиск и рендер результатов — клиентские (SearchBar + SearchResults).
+ * Search page. The query is read from the URL on the server (`searchParams`) and
+ * passed down as a prop — that avoids `useSearchParams` and its Suspense
+ * boundary. Search input and results rendering are client-side
+ * (SearchBar + SearchResults).
  */
 export default async function SearchPage({ searchParams }: Props) {
   const { query = "" } = await searchParams;
@@ -17,10 +18,10 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-        Поиск фильмов
+        Search movies
       </h1>
       <p className="mt-1 text-sm text-foreground/60">
-        Найди фильм по названию — по данным TMDB.
+        Find a movie by title — data by TMDB.
       </p>
 
       <div className="mt-6 max-w-md">

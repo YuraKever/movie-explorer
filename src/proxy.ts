@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
 /**
- * Proxy (в Next 16 — бывший middleware). Делает ОПТИМИСТИЧНУЮ проверку:
- * читает только наличие session-cookie (без похода в БД — proxy бежит на каждом
- * роуте, включая prefetch). Настоящая проверка — в самих страницах/роут-хендлерах
- * через DAL (`requireUser`).
+ * Proxy (the former middleware in Next 16). Performs an OPTIMISTIC check: it
+ * only reads whether a session cookie exists (no DB round-trip — proxy runs on
+ * every route, prefetches included). The real check lives in the pages and route
+ * handlers themselves, through the DAL (`requireUser`).
  *
- *  - гость на /favorites  → редирект на /login?redirect=/favorites
- *  - залогиненный на /login|/register → редирект на /favorites
+ *  - guest on /favorites → redirect to /login?redirect=/favorites
+ *  - signed-in user on /login|/register → redirect to /favorites
  */
 const protectedRoutes = ["/favorites"];
 const authRoutes = ["/login", "/register"];

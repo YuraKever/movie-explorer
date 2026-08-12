@@ -2,7 +2,7 @@ import Image from "next/image";
 import { profileUrl } from "@/lib/tmdb";
 import type { CastMember } from "@/features/movies/types";
 
-/** Горизонтальная лента актёров: фото, имя, роль. */
+/** Horizontal cast strip: photo, name, character. */
 export function CastRow({ cast }: { cast: CastMember[] }) {
   return (
     <ul className="flex gap-4 overflow-x-auto pb-2">

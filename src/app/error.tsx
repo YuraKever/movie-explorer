@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 /**
- * Границы ошибок обязаны быть клиентскими. Ловит непредвиденные ошибки рендера
- * сегмента (например, если серверный запрос к TMDB упал). `reset()` перемонтирует
- * сегмент — для транзиентных сбоев это повторная попытка.
+ * Error boundaries must be client components. Catches unexpected render errors
+ * in the segment (e.g. a failed server-side TMDB request). `reset()` remounts
+ * the segment — for transient failures that is the retry.
  */
 export default function Error({
   error,
@@ -24,9 +24,9 @@ export default function Error({
       <p className="text-5xl" aria-hidden>
         😕
       </p>
-      <h1 className="mt-4 text-xl font-bold">Что-то пошло не так</h1>
+      <h1 className="mt-4 text-xl font-bold">Something went wrong</h1>
       <p className="mt-2 text-sm text-foreground/60">
-        Не удалось загрузить эту страницу. Попробуй ещё раз.
+        This page could not be loaded. Please try again.
       </p>
       <div className="mt-6 flex gap-3">
         <button
@@ -34,13 +34,13 @@ export default function Error({
           onClick={() => reset()}
           className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
         >
-          Повторить
+          Try again
         </button>
         <Link
           href="/"
           className="rounded-lg border border-black/10 px-4 py-2 text-sm transition hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
         >
-          На главную
+          Go home
         </Link>
       </div>
     </main>

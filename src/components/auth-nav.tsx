@@ -8,9 +8,9 @@ const itemClass =
   "rounded-md px-3 py-1.5 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10";
 
 /**
- * Правая часть шапки: состояние авторизации. Реактивно через `useSession`
- * (обновляется на вход/выход без полной перезагрузки). До ответа — скелет,
- * чтобы не мигать «Войти» у уже залогиненного.
+ * Right side of the header: auth state. Reactive through `useSession`
+ * (updates on sign-in/sign-out without a full reload). Until the session
+ * resolves — a skeleton, so a signed-in user never sees "Sign in" flash.
  */
 export function AuthNav() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export function AuthNav() {
   if (!data) {
     return (
       <Link href="/login" className={itemClass}>
-        Войти
+        Sign in
       </Link>
     );
   }
@@ -48,7 +48,7 @@ export function AuthNav() {
         {data.user.email}
       </span>
       <button type="button" onClick={onLogout} className={itemClass}>
-        Выйти
+        Sign out
       </button>
     </div>
   );

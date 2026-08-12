@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { tmdbFetch } from "@/lib/tmdb";
 
 /**
- * Прокси к TMDB. Любой клиентский запрос вида
- *   /api/tmdb/<путь TMDB>?<query>
- * проксируется на https://api.themoviedb.org/3/<путь TMDB> с подставленным
- * на сервере ключом. Клиент ключа не видит.
+ * TMDB proxy. Any client request shaped like
+ *   /api/tmdb/<TMDB path>?<query>
+ * is proxied to https://api.themoviedb.org/3/<TMDB path> with the key injected
+ * on the server. The client never sees the key.
  *
- * Пример: GET /api/tmdb/trending/movie/week
+ * Example: GET /api/tmdb/trending/movie/week
  */
 export async function GET(
   request: NextRequest,
@@ -20,7 +20,7 @@ export async function GET(
     const data = await tmdbFetch(path.join("/"), search);
     return NextResponse.json(data);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Неизвестная ошибка";
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

@@ -7,10 +7,10 @@ import {
   removeFavoriteRequest,
 } from "./api";
 
-/** Единый ключ кеша — все компоненты читают один и тот же список. */
+/** Single cache key — every component reads the same list. */
 const FAVORITES_KEY = ["favorites"] as const;
 
-/** Минимальный срез для хранения (порядок как в старом сторе — свежие первыми). */
+/** Minimal slice to store (newest first, same order as the old store). */
 function compact(movie: MovieCardData): MovieCardData {
   return {
     id: movie.id,
@@ -22,8 +22,8 @@ function compact(movie: MovieCardData): MovieCardData {
 }
 
 /**
- * Избранное с сервера. Запрос включается только для залогиненного пользователя
- * (у гостя список пуст, а /api/favorites вернул бы 401).
+ * Favorites from the server. The query is enabled only for a signed-in user
+ * (a guest has an empty list, and /api/favorites would answer 401).
  */
 export function useFavorites() {
   const { data: session } = useSession();
@@ -35,15 +35,15 @@ export function useFavorites() {
   });
 }
 
-/** Является ли фильм избранным (читает общий кеш useFavorites). */
+/** Whether a movie is a favorite (reads the shared useFavorites cache). */
 export function useIsFavorite(movieId: number) {
   const { data } = useFavorites();
   return data?.some((m) => m.id === movieId) ?? false;
 }
 
 /**
- * Переключение избранного с оптимистичным обновлением: UI меняется мгновенно,
- * при ошибке откатываемся к предыдущему состоянию, в конце — ресинк с сервером.
+ * Optimistic favorite toggle: the UI changes instantly, on failure we roll back
+ * to the previous state, and finally resync with the server.
  */
 export function useToggleFavorite() {
   const queryClient = useQueryClient();

@@ -5,9 +5,9 @@ import { useFavorites } from "@/features/favorites/queries";
 import { MovieGrid } from "@/components/movie-grid";
 
 /**
- * Список избранного с сервера. Пока грузится — skeleton; дальше — сетка либо
- * приглашение начать. Страница /favorites уже защищена на сервере (requireUser),
- * так что сюда попадает только залогиненный пользователь.
+ * Server-side favorites list. While loading — a skeleton; then either the grid
+ * or an invitation to start. The /favorites page is already protected on the
+ * server (requireUser), so only signed-in users get here.
  */
 export function FavoritesList() {
   const { data, isPending } = useFavorites();
@@ -17,11 +17,11 @@ export function FavoritesList() {
   if (!data || data.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-foreground/60">Пока пусто.</p>
+        <p className="text-foreground/60">Nothing here yet.</p>
         <p className="mt-1 text-sm text-foreground/50">
-          Нажми ♥ на постере, чтобы сохранить фильм. Начни с{" "}
+          Hit ♥ on a poster to save a movie. Start with{" "}
           <Link href="/discover" className="text-amber-600 hover:underline dark:text-amber-400">
-            каталога
+            discover
           </Link>
           .
         </p>

@@ -1,6 +1,6 @@
 /**
- * Мгновенный скелет при навигации на серверные страницы (главная, каталог).
- * Suspense-фолбэк, пока стримится контент сегмента.
+ * Instant skeleton when navigating to server-rendered pages (home, discover).
+ * Suspense fallback while the segment's content streams in.
  */
 export default function Loading() {
   return (

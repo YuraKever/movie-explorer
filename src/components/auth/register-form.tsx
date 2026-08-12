@@ -10,9 +10,9 @@ const inputClass =
   "w-full rounded-lg border border-black/10 bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-amber-500 dark:border-white/15";
 
 /**
- * Форма регистрации (имя + email + пароль). Better Auth после sign-up сам
- * создаёт сессию, поэтому дальше — как при входе: переносим избранное из
- * localStorage и уходим на `redirectTo`.
+ * Sign-up form (name + email + password). Better Auth creates a session right
+ * after sign-up, so the rest matches sign-in: move favorites out of localStorage
+ * and navigate to `redirectTo`.
  */
 export function RegisterForm({ redirectTo = "/favorites" }: { redirectTo?: string }) {
   const router = useRouter();
@@ -29,7 +29,7 @@ export function RegisterForm({ redirectTo = "/favorites" }: { redirectTo?: strin
 
     const { error } = await authClient.signUp.email({ name, email, password });
     if (error) {
-      setError(error.message ?? "Не удалось зарегистрироваться.");
+      setError(error.message ?? "Could not create the account.");
       setPending(false);
       return;
     }
@@ -43,7 +43,7 @@ export function RegisterForm({ redirectTo = "/favorites" }: { redirectTo?: strin
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-1.5">
         <label htmlFor="name" className="block text-sm font-medium">
-          Имя
+          Name
         </label>
         <input
           id="name"
@@ -75,7 +75,7 @@ export function RegisterForm({ redirectTo = "/favorites" }: { redirectTo?: strin
 
       <div className="space-y-1.5">
         <label htmlFor="password" className="block text-sm font-medium">
-          Пароль
+          Password
         </label>
         <input
           id="password"
@@ -88,7 +88,7 @@ export function RegisterForm({ redirectTo = "/favorites" }: { redirectTo?: strin
           onChange={(e) => setPassword(e.target.value)}
           className={inputClass}
         />
-        <p className="text-xs text-foreground/50">Минимум 8 символов.</p>
+        <p className="text-xs text-foreground/50">At least 8 characters.</p>
       </div>
 
       {error && (
@@ -102,16 +102,16 @@ export function RegisterForm({ redirectTo = "/favorites" }: { redirectTo?: strin
         disabled={pending}
         className="w-full rounded-lg bg-amber-500 px-3 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-amber-400 disabled:opacity-60"
       >
-        {pending ? "Создаём…" : "Зарегистрироваться"}
+        {pending ? "Creating…" : "Create account"}
       </button>
 
       <p className="text-center text-sm text-foreground/60">
-        Уже есть аккаунт?{" "}
+        Already have an account?{" "}
         <Link
           href="/login"
           className="text-amber-600 hover:underline dark:text-amber-400"
         >
-          Войти
+          Sign in
         </Link>
       </p>
     </form>

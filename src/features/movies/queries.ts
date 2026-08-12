@@ -2,14 +2,14 @@ import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import { searchMovies, discoverMovies } from "./api";
 import type { DiscoverFilters, Movie, PaginatedResponse } from "./types";
 
-/** Следующая страница TMDB или undefined, если достигли конца. */
+/** Next TMDB page, or undefined once the end is reached. */
 function getNextPageParam(last: PaginatedResponse<Movie>) {
   return last.page < last.total_pages ? last.page + 1 : undefined;
 }
 
 /**
- * Поиск с бесконечной подгрузкой. Пустой запрос не выполняется (`enabled`),
- * `keepPreviousData` не даёт ленте «моргать» при смене запроса.
+ * Search with infinite loading. An empty query is not run (`enabled`), and
+ * `keepPreviousData` keeps the feed from flickering as the query changes.
  */
 export function useSearchMovies(query: string) {
   const q = query.trim();
@@ -25,7 +25,7 @@ export function useSearchMovies(query: string) {
   });
 }
 
-/** Каталог с фильтрами и бесконечной подгрузкой. Смена фильтров сбрасывает ленту. */
+/** Discover with filters and infinite loading. Changing filters resets the feed. */
 export function useDiscoverMovies(filters: DiscoverFilters) {
   return useInfiniteQuery({
     queryKey: ["discover-movies", filters],

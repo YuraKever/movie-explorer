@@ -5,12 +5,12 @@ import { FavoriteButton } from "./favorite-button";
 import type { MovieCardData } from "@/features/movies/types";
 
 /**
- * Карточка фильма: постер (next/image, без сдвига макета за счёт aspect-[2/3]),
- * оценка поверх и название с годом под ним. Вся карточка — ссылка на детали
- * (`/movie/[id]`), с состояниями hover и focus-visible для доступности.
+ * Movie card: poster (next/image, no layout shift thanks to aspect-[2/3]),
+ * rating on top and title with year underneath. The whole card is a link to the
+ * detail page (`/movie/[id]`), with hover and focus-visible states for a11y.
  *
- * `sizes` описывает реальную ширину карточки в сетке (2→5 колонок), чтобы
- * браузер тянул постер подходящего размера, а не на весь экран.
+ * `sizes` describes the card's real width in the grid (2→5 columns) so the
+ * browser fetches a properly sized poster instead of a full-screen one.
  */
 const POSTER_SIZES =
   "(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw";
@@ -35,10 +35,10 @@ export function MovieCard({
         {poster ? (
           <Image
             src={poster}
-            alt={`Постер фильма «${movie.title}»`}
+            alt={`${movie.title} poster`}
             fill
             sizes={POSTER_SIZES}
-            // Первый ряд — выше сгиба: грузим сразу, это кандидат в LCP.
+            // First row is above the fold: load eagerly, it is the LCP candidate.
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
