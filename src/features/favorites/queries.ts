@@ -66,7 +66,9 @@ export function useToggleFavorite() {
     },
 
     onError: (_err, { isFav }, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(FAVORITES_KEY, ctx.prev);
+      // `prev` is undefined when the list itself never loaded; falling back to
+      // an empty list keeps the optimistic entry from surviving as "saved".
+      queryClient.setQueryData(FAVORITES_KEY, ctx?.prev ?? []);
       // The heart silently snapping back reads as a UI glitch, not a failure.
       toast(
         isFav

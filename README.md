@@ -6,6 +6,8 @@ with a live deployment.
 
 > **🔗 Live demo:** https://movie-explorer-zeta-ten.vercel.app
 
+[![CI](https://github.com/YuraKever/movie-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/YuraKever/movie-explorer/actions/workflows/ci.yml)
+
 ![Home — dark theme](docs/screenshots/home-dark.jpg)
 
 ---
@@ -33,6 +35,7 @@ with a live deployment.
 | **Auth** | Better Auth — email + password, sessions in a cookie |
 | **Database** | PostgreSQL + Drizzle ORM (Docker locally, Neon in production) |
 | **Theme** | next-themes |
+| **Tests** | Vitest + Testing Library, Playwright for one end-to-end path |
 | **API** | TMDB |
 | **Deployment** | Vercel |
 
@@ -100,8 +103,10 @@ src/
 ├── features/favorites/       # api · api.server (Drizzle) · queries · migrate-local
 ├── lib/db/                   # Drizzle client · schema · auth-schema (CLI)
 ├── lib/auth.ts · auth-client.ts · dal.ts   # Better Auth + session check
-├── providers/                # QueryProvider · ThemeProvider
+├── providers/                # QueryProvider · ThemeProvider · ToastProvider
 ├── lib/tmdb.ts               # server-side TMDB client + helpers
+├── test/                     # Vitest setup, provider render helper, fetch stub
+e2e/ · .github/workflows/ci.yml
 proxy.ts (src/) · drizzle.config.ts · docker-compose.yml
 ```
 
@@ -127,6 +132,25 @@ npm run db:migrate          # apply Drizzle migrations
 # 5. Start
 npm run dev                 # http://localhost:3000
 ```
+
+## Tests
+
+```bash
+npm run test         # Vitest + Testing Library (jsdom)
+npm run test:watch
+npm run test:e2e     # Playwright — needs the database and TMDB credentials
+```
+
+Unit tests cover the components that carry logic rather than markup: the favorite toggle
+(guest redirect, optimistic flip, rollback with a message), the discover filters (what
+reaches the URL and what does not), the burger menu (Escape, outside click, tab order) and
+the movie card (poster fallback, hidden rating). The single Playwright path exercises what
+the unit tests mock away — sign-up, a real session cookie, a write to Postgres and a read
+back after a reload. It creates an `e2e-…@example.com` account per run.
+
+CI runs lint, `tsc --noEmit`, the unit tests and a production build on every push and pull
+request, plus the end-to-end path against a throwaway Postgres service. The workflow needs
+one repository secret: `TMDB_ACCESS_TOKEN`.
 
 **Working with the database:** `npm run db:generate` creates a migration from a changed
 schema, `npm run db:migrate` applies it, `npm run db:studio` opens Drizzle Studio.

@@ -192,7 +192,7 @@ generates the Drizzle schema itself, less code for email + password.
 
 - [ ] TV shows in addition to movies
 - [x] Auth (Better Auth) + favorites in the database — **done, see Phase 7**
-- [ ] Tests (Vitest + React Testing Library) for 2–3 components — **scheduled as Phase 9**
+- [x] Tests (Vitest + React Testing Library) for 2–3 components — **done, see Phase 9**
 - [ ] PWA
 
 ---
@@ -240,20 +240,20 @@ true.
 **Done when:** scrolling discover to the end stops cleanly, a failed favorites fetch shows
 an error, and a rejected toggle says so.
 
-### 🔜 Phase 9 — Tests and CI (the biggest missing signal)
+### ✅ Phase 9 — Tests and CI
 
 There is not a single test in the repo and no `.github/`. This is the most common reason
 a "portfolio-grade" claim gets discounted, and it is the one item already sitting unticked
 in Stretch.
 
-- [ ] Vitest + Testing Library, `npm run test`; jsdom environment, alias `@/` from tsconfig
-- [ ] Component tests where there is real logic, not just markup: `FavoriteButton`
+- [x] Vitest + Testing Library, `npm run test`; jsdom environment, alias `@/` from tsconfig
+- [x] Component tests where there is real logic, not just markup: `FavoriteButton`
       (guest → redirect, signed-in → optimistic toggle), `Filters` (writes to the URL,
       omits the default sort, reset), `MobileNav` (Escape closes and restores focus,
       outside click closes), `MovieCard` (poster fallback, rating hidden at 0)
-- [ ] One Playwright end-to-end path: sign up → add a favorite → reload → it is still there
-- [ ] GitHub Actions: `lint` + `tsc --noEmit` + `test` + `build` on push and PR
-- [ ] Status badge in the README
+- [x] One Playwright end-to-end path: sign up → add a favorite → reload → it is still there
+- [x] GitHub Actions: `lint` + `tsc --noEmit` + `test` + `build` on push and PR
+- [x] Status badge in the README
 
 **Done when:** CI is green on a pull request and the badge is live.
 **NOT doing:** chasing coverage percentages — a handful of meaningful tests beats a number.
