@@ -1,5 +1,5 @@
 import { tmdbFetch } from "@/lib/tmdb";
-import type { Genre, MovieDetail, PersonDetail } from "./types";
+import type { Genre, Movie, MovieDetail, PaginatedResponse, PersonDetail } from "./types";
 
 /**
  * Server-side TMDB requests (RSC and `generateMetadata`): straight through the
@@ -20,6 +20,11 @@ export function getPerson(id: string | number) {
   return tmdbFetch<PersonDetail>(`person/${id}`, {
     append_to_response: "movie_credits",
   });
+}
+
+/** One of TMDB's curated movie lists (`now_playing`, `top_rated`, `upcoming`). */
+export function getMovieList(list: "now_playing" | "top_rated" | "upcoming") {
+  return tmdbFetch<PaginatedResponse<Movie>>(`movie/${list}`);
 }
 
 /** Genre list for the discover filters. Cached long — the list is stable. */

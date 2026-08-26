@@ -1,23 +1,22 @@
 import { tmdbFetch } from "@/lib/tmdb";
+import { getMovieList } from "@/features/movies/api.server";
 import { MovieGrid } from "@/components/movie-grid";
 import type { Movie, PaginatedResponse } from "@/features/movies/types";
 
 /**
- * Home page (RSC): this week's trending movies as a poster grid.
- * The server component fetches through the server-side TMDB client directly —
- * no extra network hop through our own /api route.
+ * Home page (RSC): trending this week, then TMDB's curated lists. The server
+ * component fetches through the server-side TMDB client directly — no extra
+ * network hop through our own /api route — and all four lists in parallel.
  */
-export default async function HomePage() {
-  let movies: Movie[] = [];
-  let error: string | null = null;
+const RAIL_SIZE = 10;
 
-  try {
-    const data =
-      await tmdbFetch<PaginatedResponse<Movie>>("trending/movie/week");
-    movies = data.results;
-  } catch (e) {
-    error = e instanceof Error ? e.message : "Unknown error";
-  }
+export default async function HomePage() {
+  const [trending, nowPlaying, topRated, upcoming] = await Promise.all([
+    settle(tmdbFetch<PaginatedResponse<Movie>>("trending/movie/week")),
+    settle(getMovieList("now_playing")),
+    settle(getMovieList("top_rated")),
+    settle(getMovieList("upcoming")),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -28,15 +27,50 @@ export default async function HomePage() {
         Popular movies right now — data by TMDB.
       </p>
 
-      {error ? (
-        <ErrorState message={error} />
+      {trending.error ? (
+        <ErrorState message={trending.error} />
       ) : (
         <div className="mt-6">
-          <MovieGrid movies={movies} priority />
+          <MovieGrid movies={trending.data?.results ?? []} priority />
         </div>
       )}
+
+      <Rail title="In theaters" movies={nowPlaying.data?.results} />
+      <Rail title="Top rated" movies={topRated.data?.results} />
+      <Rail title="Coming soon" movies={upcoming.data?.results} />
     </main>
   );
+}
+
+/**
+ * A secondary list. A rail TMDB could not serve is left out rather than
+ * announced — trending above already carries the error message.
+ */
+function Rail({ title, movies }: { title: string; movies?: Movie[] }) {
+  if (!movies?.length) return null;
+
+  return (
+    <section className="mt-12">
+      <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+      <div className="mt-4">
+        <MovieGrid movies={movies.slice(0, RAIL_SIZE)} />
+      </div>
+    </section>
+  );
+}
+
+type Settled<T> = { data: T | null; error: string | null };
+
+/** One failing list must not take the whole page down with it. */
+async function settle<T>(promise: Promise<T>): Promise<Settled<T>> {
+  try {
+    return { data: await promise, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 }
 
 /** Graceful error state: most often this is a missing TMDB key. */
