@@ -8,6 +8,7 @@ import { TrailerEmbed } from "@/components/trailer-embed";
 import { CastRow } from "@/components/cast-row";
 import { MovieGrid } from "@/components/movie-grid";
 import { posterUrl, backdropUrl } from "@/lib/tmdb";
+import type { MovieDetail } from "@/features/movies/types";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -64,6 +65,13 @@ export default async function MoviePage({ params }: Props) {
 
   return (
     <main className="relative">
+      <script
+        type="application/ld+json"
+        // The data comes from TMDB and is serialised by JSON.stringify, not
+        // concatenated — there is no HTML for a title to break out into.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(movieJsonLd(movie)) }}
+      />
+
       {/* Backdrop: fades out downwards, purely atmospheric */}
       {backdrop && (
         <div
@@ -184,6 +192,34 @@ export default async function MoviePage({ params }: Props) {
       </div>
     </main>
   );
+}
+
+/** Schema.org Movie, so search results can show the rating and the year. */
+function movieJsonLd(movie: MovieDetail) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Movie",
+    name: movie.title,
+    description: movie.overview || undefined,
+    image: posterUrl(movie.poster_path, "w500") ?? undefined,
+    datePublished: movie.release_date || undefined,
+    genre: movie.genres?.map((genre) => genre.name),
+    duration: movie.runtime ? `PT${movie.runtime}M` : undefined,
+    actor: movie.credits?.cast.slice(0, 5).map((member) => ({
+      "@type": "Person",
+      name: member.name,
+    })),
+    aggregateRating:
+      movie.vote_count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: movie.vote_average,
+            ratingCount: movie.vote_count,
+            bestRating: 10,
+            worstRating: 0,
+          }
+        : undefined,
+  };
 }
 
 /** Minutes → "2h 15m". */

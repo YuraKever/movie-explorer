@@ -29,17 +29,27 @@ function buildAuth(): { headers: Record<string, string>; apiKeyParam?: string } 
   );
 }
 
+/** Repeated keys survive when the caller passes URLSearchParams. */
+type TmdbSearchParams =
+  | Record<string, string | number | undefined>
+  | URLSearchParams;
+
 export async function tmdbFetch<T>(
   path: string,
-  searchParams: Record<string, string | number | undefined> = {},
+  searchParams: TmdbSearchParams = {},
   options: TmdbFetchOptions = {},
 ): Promise<T> {
   const { headers, apiKeyParam } = buildAuth();
 
   const url = new URL(`${TMDB_BASE_URL}/${path.replace(/^\//, "")}`);
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (value !== undefined) url.searchParams.set(key, String(value));
+  if (searchParams instanceof URLSearchParams) {
+    for (const [key, value] of searchParams) url.searchParams.append(key, value);
+  } else {
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (value !== undefined) url.searchParams.set(key, String(value));
+    }
   }
+  // `set`, not `append`: a caller-supplied api_key must never survive.
   if (apiKeyParam) url.searchParams.set("api_key", apiKeyParam);
 
   const res = await fetch(url, {

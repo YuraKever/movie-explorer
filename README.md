@@ -53,8 +53,10 @@ with a live deployment.
 
 - **The TMDB key never leaves the server.** Client requests go through the Route Handler
   proxy `app/api/tmdb/[...path]`, which injects the key server-side. The key is absent
-  from the bundle and from the client's Network tab — a nice thing to point at in an
-  interview.
+  from the bundle and from the client's Network tab. Since the credentials are ours, the
+  proxy is not a general-purpose relay: it forwards only an allowlist of endpoints,
+  strips a caller-supplied `api_key`, rate-limits per IP and lets the CDN hold responses
+  (`s-maxage`) instead of paying for a function call per scroll.
 - **RSC where possible; client components where interaction is needed.** Home and detail
   pages are server-rendered (SSR + `fetch` cache); search / feed / favorites are
   client-side.
@@ -80,6 +82,10 @@ with a live deployment.
   away from `/favorites`, a signed-in user away from the auth screens — based on cookie
   presence, with no DB round-trip. The real check lives closer to the data: in the page
   itself (`requireUser`) and in the API routes.
+- **A bad deploy fails at boot, not at the first request.** `instrumentation.ts` validates
+  the environment with zod when the server starts, so a missing `DATABASE_URL` or a
+  placeholder auth secret is a startup error with every problem listed at once. It does
+  not run during `next build`, so a clone without credentials still builds.
 - **Lossless migration:** on first sign-in, favorites from the old `localStorage` are
   moved to the server once (`/api/favorites/import`) and cleared locally only after
   success.

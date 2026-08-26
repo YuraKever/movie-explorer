@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { ToastProvider } from "@/providers/toast-provider";
 import { Header } from "@/components/header";
+import { siteDescription, siteName, siteUrl } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,12 +18,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Without a base, every relative Open Graph URL below is dropped silently.
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Movie Explorer",
-    template: "%s · Movie Explorer",
+    default: siteName,
+    template: `%s · ${siteName}`,
   },
-  description:
-    "Browse and search movies powered by TMDB: trending, details, favorites.",
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+    url: siteUrl,
+  },
 };
 
 export default function RootLayout({

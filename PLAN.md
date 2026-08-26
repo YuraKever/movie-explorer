@@ -258,21 +258,21 @@ in Stretch.
 **Done when:** CI is green on a pull request and the badge is live.
 **NOT doing:** chasing coverage percentages — a handful of meaningful tests beats a number.
 
-### 🔜 Phase 10 — Harden the proxy, complete the SEO scaffolding
+### ✅ Phase 10 — Harden the proxy, complete the SEO scaffolding
 
 The README headlines `/api/tmdb/[...path]` as the security highlight, so it is exactly
 where an interviewer will poke. Right now it is an open, uncached, unvalidated relay
 backed by our key.
 
-- [ ] Allowlist the forwarded paths (`trending/*`, `search/movie`, `discover/movie`,
+- [x] Allowlist the forwarded paths (`trending/*`, `search/movie`, `discover/movie`,
       `movie/:id`, `genre/movie/list`) instead of passing `path.join("/")` through verbatim
-- [ ] `Cache-Control: s-maxage=...` on the response — today every client call is a
+- [x] `Cache-Control: s-maxage=...` on the response — today every client call is a
       function invocation; only the inner data cache helps
-- [ ] Basic rate limiting, and keep repeated query params intact
+- [x] Basic rate limiting, and keep repeated query params intact
       (`Object.fromEntries` currently collapses them)
-- [ ] `metadataBase`, `sitemap.ts`, `robots.ts` (noindex for `/login`, `/register`,
+- [x] `metadataBase`, `sitemap.ts`, `robots.ts` (noindex for `/login`, `/register`,
       `/favorites`), an OG image, and `Movie` JSON-LD on the detail page
-- [ ] Boot-time env validation with zod — `DATABASE_URL` and `BETTER_AUTH_SECRET` are read
+- [x] Boot-time env validation with zod — `DATABASE_URL` and `BETTER_AUTH_SECRET` are read
       unchecked today, and the TMDB credentials only throw lazily on the first fetch
 
 **Done when:** the proxy rejects an unknown path, repeat visits hit the CDN, and the SEO
