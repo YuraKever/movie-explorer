@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth-client";
+import { useToast } from "@/providers/toast-provider";
 import type { MovieCardData } from "@/features/movies/types";
 import {
   addFavoriteRequest,
@@ -43,10 +44,11 @@ export function useIsFavorite(movieId: number) {
 
 /**
  * Optimistic favorite toggle: the UI changes instantly, on failure we roll back
- * to the previous state, and finally resync with the server.
+ * to the previous state and say so, and finally resync with the server.
  */
 export function useToggleFavorite() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ movie, isFav }: { movie: MovieCardData; isFav: boolean }) =>
@@ -63,8 +65,14 @@ export function useToggleFavorite() {
       return { prev };
     },
 
-    onError: (_err, _vars, ctx) => {
+    onError: (_err, { isFav }, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(FAVORITES_KEY, ctx.prev);
+      // The heart silently snapping back reads as a UI glitch, not a failure.
+      toast(
+        isFav
+          ? "Could not remove from favorites. Please try again."
+          : "Could not add to favorites. Please try again.",
+      );
     },
 
     onSettled: () => {

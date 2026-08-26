@@ -2,9 +2,13 @@ import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import { searchMovies, discoverMovies } from "./api";
 import type { DiscoverFilters, Movie, PaginatedResponse } from "./types";
 
+/** TMDB answers 422 beyond this page, however large `total_pages` claims to be. */
+const MAX_PAGE = 500;
+
 /** Next TMDB page, or undefined once the end is reached. */
 function getNextPageParam(last: PaginatedResponse<Movie>) {
-  return last.page < last.total_pages ? last.page + 1 : undefined;
+  const lastPage = Math.min(last.total_pages, MAX_PAGE);
+  return last.page < lastPage ? last.page + 1 : undefined;
 }
 
 /**

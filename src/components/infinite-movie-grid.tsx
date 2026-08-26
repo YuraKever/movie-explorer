@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { InfiniteData, UseInfiniteQueryResult } from "@tanstack/react-query";
+import { ErrorTile } from "./error-tile";
 import { MovieGrid } from "./movie-grid";
 import type { Movie, PaginatedResponse } from "@/features/movies/types";
 
@@ -56,14 +57,7 @@ export function InfiniteMovieGrid({
   if (isLoading) return <SkeletonGrid />;
 
   if (isError) {
-    return (
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
-        <p className="font-medium">⚠️ Could not load results</p>
-        <p className="mt-1 text-foreground/70">
-          {error instanceof Error ? error.message : "Unknown error"}
-        </p>
-      </div>
-    );
+    return <ErrorTile title="Could not load results" error={error} />;
   }
 
   const movies = dedupeById(data?.pages.flatMap((page) => page.results) ?? []);

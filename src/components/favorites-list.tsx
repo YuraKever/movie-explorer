@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { useFavorites } from "@/features/favorites/queries";
+import { ErrorTile } from "@/components/error-tile";
 import { MovieGrid } from "@/components/movie-grid";
 
 /**
- * Server-side favorites list. While loading — a skeleton; then either the grid
- * or an invitation to start. The /favorites page is already protected on the
- * server (requireUser), so only signed-in users get here.
+ * Server-side favorites list. While loading — a skeleton; then the grid, an
+ * error, or an invitation to start. The /favorites page is already protected on
+ * the server (requireUser), so only signed-in users get here.
  */
 export function FavoritesList() {
-  const { data, isPending } = useFavorites();
+  const { data, isPending, isError, error } = useFavorites();
 
   if (isPending) return <SkeletonGrid />;
+
+  if (isError) return <ErrorTile title="Could not load favorites" error={error} />;
 
   if (!data || data.length === 0) {
     return (
