@@ -19,6 +19,10 @@ type Props = {
  * when an invisible sentinel approaches the viewport (IntersectionObserver with
  * a 600px margin — load ahead of time, no stutter at the very bottom).
  *
+ * The sentinel is a scroll trigger, so it is unreachable without a pointer or a
+ * scrolling gesture: the "Load more" button is how a keyboard-only user gets to
+ * page 2, and a live region announces what arrived.
+ *
  * Reused by both discover and search: the only difference is the query passed in.
  */
 export function InfiniteMovieGrid({
@@ -77,10 +81,24 @@ export function InfiniteMovieGrid({
       {/* Infinite-scroll sentinel */}
       <div ref={sentinelRef} aria-hidden className="h-px" />
 
-      {isFetchingNextPage && (
-        <p className="py-6 text-center text-sm text-foreground/50">Loading…</p>
-      )}
-      {!hasNextPage && (
+      <p aria-live="polite" className="sr-only">
+        {isFetchingNextPage
+          ? "Loading more results"
+          : `Showing ${movies.length} of ${total.toLocaleString("en-US")} results`}
+      </p>
+
+      {hasNextPage ? (
+        <div className="flex justify-center py-6">
+          <button
+            type="button"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="rounded-lg border border-black/10 px-4 py-2 text-sm text-foreground/70 transition-colors hover:bg-black/5 hover:text-foreground disabled:opacity-60 dark:border-white/15 dark:hover:bg-white/10"
+          >
+            {isFetchingNextPage ? "Loading…" : "Load more"}
+          </button>
+        </div>
+      ) : (
         <p className="py-8 text-center text-sm text-foreground/40">
           You&apos;ve reached the end 🎬
         </p>
