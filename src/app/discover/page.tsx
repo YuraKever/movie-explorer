@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { getGenres } from "@/features/movies/api.server";
+import { parseDiscoverFilters } from "@/features/movies/filters";
 import { Filters } from "@/components/filters";
 import { DiscoverFeed } from "@/components/discover-feed";
-import type { DiscoverFilters, SortOption } from "@/features/movies/types";
 
 export const metadata: Metadata = { title: "Discover" };
 
 type Props = {
-  searchParams: Promise<{ genre?: string; year?: string; sort?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 /**
@@ -16,15 +16,17 @@ type Props = {
  * fetched on the server — it is static and caches well.
  */
 export default async function DiscoverPage({ searchParams }: Props) {
-  const { genre, year, sort } = await searchParams;
+  const params = await searchParams;
+  const filters = parseDiscoverFilters(
+    Object.fromEntries(
+      Object.entries(params).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[0] : value,
+      ]),
+    ),
+  );
   const genres = await getGenres();
-  const maxYear = new Date().getFullYear();
-
-  const filters: DiscoverFilters = {
-    genre,
-    year,
-    sort: (sort as SortOption) || "popularity.desc",
-  };
+  const maxYear = new Date().getFullYear() + 1;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
@@ -32,11 +34,11 @@ export default async function DiscoverPage({ searchParams }: Props) {
         Discover movies
       </h1>
       <p className="mt-1 text-sm text-foreground/60">
-        Filter by genre, year and sorting — the feed loads as you scroll.
+        Filter by genre, years, rating and sorting — the feed loads as you scroll.
       </p>
 
       <div className="mt-6">
-        <Filters genres={genres} current={{ genre, year, sort }} maxYear={maxYear} />
+        <Filters genres={genres} current={filters} maxYear={maxYear} />
       </div>
 
       <div className="mt-8">

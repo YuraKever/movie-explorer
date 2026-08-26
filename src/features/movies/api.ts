@@ -1,3 +1,4 @@
+import { DEFAULT_SORT } from "./filters";
 import type { DiscoverFilters, Movie, PaginatedResponse } from "./types";
 
 /**
@@ -35,17 +36,23 @@ export function searchMovies(query: string, page = 1) {
   });
 }
 
-/** Discover with filters (genre / year / sorting), paginated. */
+/** Discover with filters (genres / years / rating / sorting), paginated. */
 export function discoverMovies(filters: DiscoverFilters, page = 1) {
   const params: Record<string, string> = {
     page: String(page),
     include_adult: "false",
-    sort_by: filters.sort ?? "popularity.desc",
+    sort_by: filters.sort ?? DEFAULT_SORT,
   };
-  if (filters.genre) params.with_genres = filters.genre;
-  if (filters.year) params.primary_release_year = filters.year;
-  // When sorting by rating, cut off obscure movies with a handful of votes.
-  if (filters.sort === "vote_average.desc") params["vote_count.gte"] = "200";
+  // Comma is AND in TMDB: several genres narrow the feed rather than widen it.
+  if (filters.genres?.length) params.with_genres = filters.genres.join(",");
+  if (filters.yearFrom) params["primary_release_date.gte"] = `${filters.yearFrom}-01-01`;
+  if (filters.yearTo) params["primary_release_date.lte"] = `${filters.yearTo}-12-31`;
+  if (filters.minRating) params["vote_average.gte"] = filters.minRating;
+  // A score is meaningless on a handful of votes, whether it is being sorted
+  // by or filtered on — one 10/10 vote would otherwise top the feed.
+  if (filters.sort === "vote_average.desc" || filters.minRating) {
+    params["vote_count.gte"] = "200";
+  }
 
   return proxyFetch<PaginatedResponse<Movie>>("discover/movie", params);
 }

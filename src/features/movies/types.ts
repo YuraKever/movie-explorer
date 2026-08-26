@@ -94,7 +94,11 @@ export type SortOption =
 
 /** Discover filters (`discover/movie`). Empty fields are not applied. */
 export type DiscoverFilters = {
-  genre?: string; // genre id as a string
-  year?: string;
+  /** TMDB genre ids; several of them narrow the feed, they do not widen it. */
+  genres?: string[];
+  yearFrom?: string;
+  yearTo?: string;
+  /** Lower bound on the TMDB score, out of 10. */
+  minRating?: string;
   sort?: SortOption;
 };
