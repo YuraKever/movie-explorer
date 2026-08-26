@@ -70,6 +70,22 @@ export type MovieDetail = Movie & {
   similar?: PaginatedResponse<Movie>;
 };
 
+/**
+ * A person's TMDB page (`/person/{id}`). `movie_credits` arrives with
+ * append_to_response; `character` is present on the cast side only.
+ */
+export type PersonDetail = {
+  id: number;
+  name: string;
+  biography?: string;
+  birthday?: string | null;
+  deathday?: string | null;
+  place_of_birth?: string | null;
+  known_for_department?: string;
+  profile_path: string | null;
+  movie_credits?: { cast: (Movie & { character?: string })[] };
+};
+
 export type SortOption =
   | "popularity.desc"
   | "vote_average.desc"

@@ -1,5 +1,5 @@
 import { tmdbFetch } from "@/lib/tmdb";
-import type { Genre, MovieDetail } from "./types";
+import type { Genre, MovieDetail, PersonDetail } from "./types";
 
 /**
  * Server-side TMDB requests (RSC and `generateMetadata`): straight through the
@@ -12,6 +12,13 @@ export function getMovieDetail(id: string | number) {
   // append_to_response pulls cast, videos and similar in a single request.
   return tmdbFetch<MovieDetail>(`movie/${id}`, {
     append_to_response: "credits,videos,similar",
+  });
+}
+
+/** A person and everything they acted in, in one request. */
+export function getPerson(id: string | number) {
+  return tmdbFetch<PersonDetail>(`person/${id}`, {
+    append_to_response: "movie_credits",
   });
 }
 
