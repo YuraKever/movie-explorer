@@ -278,19 +278,22 @@ backed by our key.
 **Done when:** the proxy rejects an unknown path, repeat visits hit the CDN, and the SEO
 files resolve in production.
 
-### 🔜 Phase 11 — Grow the product
+### 🚧 Phase 11 — Grow the product
 
 In descending order of value; pick from the top rather than doing all of it.
 
-- [ ] **Person pages** `/person/[id]` — cast names in `CastRow` are plain text today, a
+- [x] **Person pages** `/person/[id]` — cast names in `CastRow` are plain text today, a
       dead end in the navigation
-- [ ] **More rails on the home page** — now playing / top rated / upcoming next to trending
-- [ ] **Wider filters** — year and rating ranges, multi-genre; TMDB `discover` supports all
+- [x] **More rails on the home page** — now playing / top rated / upcoming next to trending
+- [x] **Wider filters** — year and rating ranges, multi-genre; TMDB `discover` supports all
       of it, the UI exposes a single genre and a single exact year
-- [ ] **Share** on the detail page
-- [ ] **Keyboard-reachable feed** — the infinite grid loads only through an
+- [x] **Share** on the detail page
+- [x] **Keyboard-reachable feed** — the infinite grid loads only through an
       IntersectionObserver sentinel, so a keyboard-only user cannot reach page 2; add a
       "Load more" button and an `aria-live` region for appended results
 - [ ] TV shows, PWA — the remaining Stretch items, last: much work, little new to show
 
 **Done when:** each item ships behind its own commit and the deployment stays green.
+
+The five items above are done. TV shows and PWA are deliberately left: as noted, they are
+much work for little new to show, and they remain the two open Stretch items.

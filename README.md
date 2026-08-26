@@ -14,15 +14,19 @@ with a live deployment.
 
 ## Features
 
-- 🔥 **Trending this week** on the home page (SSR)
-- 🗂 **Discover** with filters (genre / year / sorting) and an **infinite feed**
+- 🔥 **Trending this week** on the home page (SSR), plus what is in theaters, top rated
+  and coming soon
+- 🗂 **Discover** with filters (several genres, a year range, a minimum rating, sorting)
+  and an **infinite feed**
 - 🔎 **Search** by title, debounced
-- 🎬 **Detail page**: poster, rating, genres, trailer (YouTube), cast, similar movies
+- 🎬 **Detail page**: poster, rating, genres, trailer (YouTube), cast, similar movies, share
+- 👤 **Person pages** — a filmography behind every name in the cast
 - 🔐 **Accounts** — sign-up and sign-in with email + password (Better Auth), session in an httpOnly cookie
 - ❤️ **Per-user favorites** — stored on the server (Postgres) and tied to the account; migrated once from the old `localStorage` on first sign-in
 - 🌗 **Dark/light theme** with no flash on load
 - 📱 **Responsive** from 320px
-- ♿ Every state handled: loading (skeleton), error, empty, 404
+- ♿ Every state handled: loading (skeleton), error, empty, 404 — and the feed loads
+  further pages by button as well as by scrolling, so it works without a pointer
 
 ## Stack
 
@@ -67,7 +71,9 @@ with a live deployment.
   `IntersectionObserver`; one component serves both discover and search.
 - **Filters and query live in the URL** (`searchParams`) — a selection is shareable and
   survives a reload. They are read **on the server**, which avoids the `useSearchParams`
-  Suspense boundary.
+  Suspense boundary. Parsing the URL and building the next one live in the same module
+  (`features/movies/filters.ts`), so the two directions cannot drift; anything a
+  hand-edited URL could carry is dropped rather than forwarded to TMDB.
 - **No theme flash** — next-themes sets the class before the first paint, and Tailwind v4
   is switched to the class-based variant via `@custom-variant dark`.
 - **Favorites are server-side and per-user.** A `favorites` table in Postgres with
@@ -97,6 +103,7 @@ src/
 ├── app/                      # routes (App Router)
 │   ├── page.tsx              # home — trending (RSC)
 │   ├── movie/[id]/           # detail page + loading skeleton
+│   ├── person/[id]/          # a person and their filmography
 │   ├── discover/ · search/   # discover with filters · search
 │   ├── favorites/            # favorites (protected, requireUser)
 │   ├── (auth)/login·register # sign-in/sign-up screens (route group)
@@ -105,7 +112,7 @@ src/
 │   ├── api/favorites/         # favorites CRUD + /import
 │   ├── error.tsx · not-found.tsx · loading.tsx
 ├── components/               # MovieCard/Grid, Filters, AuthNav, auth/*-form, …
-├── features/movies/          # api (client) · api.server (RSC) · queries · types
+├── features/movies/          # api (client) · api.server (RSC) · queries · filters · types
 ├── features/favorites/       # api · api.server (Drizzle) · queries · migrate-local
 ├── lib/db/                   # Drizzle client · schema · auth-schema (CLI)
 ├── lib/auth.ts · auth-client.ts · dal.ts   # Better Auth + session check
