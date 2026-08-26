@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getMovieDetail } from "@/features/movies/api.server";
 import { FavoriteButton } from "@/components/favorite-button";
+import { ShareButton } from "@/components/share-button";
 import { TrailerEmbed } from "@/components/trailer-embed";
 import { CastRow } from "@/components/cast-row";
 import { MovieGrid } from "@/components/movie-grid";
@@ -11,6 +12,9 @@ import { posterUrl, backdropUrl } from "@/lib/tmdb";
 import type { MovieDetail } from "@/features/movies/types";
 
 type Props = { params: Promise<{ id: string }> };
+
+const actionClass =
+  "rounded-lg border border-black/10 px-4 py-2 transition-colors hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10";
 
 /**
  * Movie page metadata for SEO and link previews (Open Graph).
@@ -135,12 +139,13 @@ export default async function MoviePage({ params }: Props) {
               {movie.release_date && <span>{movie.release_date}</span>}
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap gap-2">
               <FavoriteButton
                 movie={movie}
                 withLabel
-                className="rounded-lg border border-black/10 px-4 py-2 transition-colors hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+                className={actionClass}
               />
+              <ShareButton title={movie.title} className={actionClass} />
             </div>
 
             {movie.genres.length > 0 && (
