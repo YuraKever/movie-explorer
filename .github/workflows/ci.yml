@@ -25,7 +25,7 @@ jobs:
           # Nothing is rendered from these at build time, but Better Auth reads
           # them at import and warns loudly about placeholder values.
           DATABASE_URL: postgres://ci:ci@localhost:5432/ci
-          BETTER_AUTH_SECRET: ci-secret-not-used-at-build-time
+          BETTER_AUTH_SECRET: ci-placeholder-secret-not-used-at-build-time
           BETTER_AUTH_URL: http://localhost:3000
 
   e2e:
@@ -44,7 +44,7 @@ jobs:
           --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgres://movie:movie@localhost:5432/movie_explorer
-      BETTER_AUTH_SECRET: ci-secret-for-ephemeral-sessions
+      BETTER_AUTH_SECRET: ci-secret-for-ephemeral-end-to-end-sessions
       BETTER_AUTH_URL: http://localhost:3000
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
