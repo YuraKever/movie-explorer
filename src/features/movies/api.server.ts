@@ -15,6 +15,11 @@ export function getMovieDetail(id: string | number) {
   });
 }
 
+/** A movie on its own — enough for a card. */
+export function getMovie(id: number) {
+  return tmdbFetch<MovieDetail>(`movie/${id}`);
+}
+
 /** A person and everything they acted in, in one request. */
 export function getPerson(id: string | number) {
   return tmdbFetch<PersonDetail>(`person/${id}`, {

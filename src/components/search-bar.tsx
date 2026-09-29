@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { searchHref, type SearchMode } from "@/features/movies/search-href";
 
 /**
  * Debounced search field. The URL is the source of truth (`/search?query=`), so
@@ -11,7 +12,13 @@ import { useEffect, useState } from "react";
  * `initialQuery` — the URL value at page render time. Comparing against it
  * suppresses a redundant navigation on mount and prevents a loop.
  */
-export function SearchBar({ initialQuery }: { initialQuery: string }) {
+export function SearchBar({
+  initialQuery,
+  mode,
+}: {
+  initialQuery: string;
+  mode: SearchMode;
+}) {
   const router = useRouter();
   const [value, setValue] = useState(initialQuery);
 
@@ -20,13 +27,11 @@ export function SearchBar({ initialQuery }: { initialQuery: string }) {
     if (q === initialQuery) return; // already in sync with the URL
 
     const timer = setTimeout(() => {
-      router.replace(q ? `/search?query=${encodeURIComponent(q)}` : "/search", {
-        scroll: false,
-      });
+      router.replace(searchHref(q, mode), { scroll: false });
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [value, initialQuery, router]);
+  }, [value, initialQuery, mode, router]);
 
   return (
     <div className="relative">
@@ -47,7 +52,9 @@ export function SearchBar({ initialQuery }: { initialQuery: string }) {
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Movie title…"
+        placeholder={
+          mode === "meaning" ? "A heist inside a dream, a robot in love…" : "Movie title…"
+        }
         aria-label="Search movies"
         autoFocus
         className="w-full rounded-lg border border-black/10 bg-background py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-amber-500 dark:border-white/15"
