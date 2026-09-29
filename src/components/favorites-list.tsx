@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useFavorites } from "@/features/favorites/queries";
 import { ErrorTile } from "@/components/error-tile";
-import { MovieGrid } from "@/components/movie-grid";
+import { MovieGrid, SkeletonGrid } from "@/components/movie-grid";
 
 /**
  * Server-side favorites list. While loading — a skeleton; then the grid, an
@@ -13,7 +13,7 @@ import { MovieGrid } from "@/components/movie-grid";
 export function FavoritesList() {
   const { data, isPending, isError, error } = useFavorites();
 
-  if (isPending) return <SkeletonGrid />;
+  if (isPending) return <SkeletonGrid count={5} />;
 
   if (isError) return <ErrorTile title="Could not load favorites" error={error} />;
 
@@ -33,17 +33,4 @@ export function FavoritesList() {
   }
 
   return <MovieGrid movies={data} priority />;
-}
-
-function SkeletonGrid() {
-  return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="aspect-[2/3] animate-pulse rounded-xl bg-black/5 dark:bg-white/10"
-        />
-      ))}
-    </div>
-  );
 }

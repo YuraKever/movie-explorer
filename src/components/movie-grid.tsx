@@ -28,3 +28,17 @@ export function MovieGrid({
     </div>
   );
 }
+
+/** Placeholder cards in the same grid, while results load. */
+export function SkeletonGrid({ count = 10 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="aspect-[2/3] animate-pulse rounded-xl bg-black/5 dark:bg-white/10"
+        />
+      ))}
+    </div>
+  );
+}
