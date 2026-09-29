@@ -12,13 +12,16 @@
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "ai:index": "tsx --env-file-if-exists=.env.local scripts/index-movies.ts"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^3.0.59",
     "@tanstack/react-query": "^5.101.2",
+    "ai": "^7.0.122",
     "better-auth": "^1.6.23",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.9",
@@ -44,6 +47,7 @@
     "eslint-config-next": "16.2.9",
     "jsdom": "^30.0.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^4.1.11"
   }

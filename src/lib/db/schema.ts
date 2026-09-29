@@ -4,3 +4,4 @@
  */
 export * from "./auth-schema";
 export * from "./favorites-schema";
+export * from "./movie-embeddings-schema";

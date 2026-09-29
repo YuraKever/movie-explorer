@@ -68,6 +68,7 @@ export type MovieDetail = Movie & {
   credits?: { cast: CastMember[] };
   videos?: { results: Video[] };
   similar?: PaginatedResponse<Movie>;
+  keywords?: { keywords: { id: number; name: string }[] };
 };
 
 /**

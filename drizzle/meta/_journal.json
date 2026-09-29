@@ -15,6 +15,13 @@
       "when": 1790681156946,
       "tag": "0001_enable_pgvector",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790682970424,
+      "tag": "0002_movie_embeddings",
+      "breakpoints": true
     }
   ]
 }
