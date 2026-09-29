@@ -1,8 +1,8 @@
-# Local Postgres for development. Production is Neon (same pg driver, only
-# DATABASE_URL changes). Start it with: `docker compose up -d db`.
+# Local Postgres with the pgvector extension, for development. Production is Neon
+# (same pg driver, only DATABASE_URL changes). Start it with: `docker compose up -d db`.
 services:
   db:
-    image: postgres:17
+    image: pgvector/pgvector:pg17-trixie
     container_name: movie-explorer-db
     restart: unless-stopped
     environment:

@@ -8,6 +8,13 @@
       "when": 1784207957963,
       "tag": "0000_woozy_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790681156946,
+      "tag": "0001_enable_pgvector",
+      "breakpoints": true
     }
   ]
 }

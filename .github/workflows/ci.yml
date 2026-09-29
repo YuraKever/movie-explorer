@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        image: pgvector/pgvector:pg17-trixie
         env:
           POSTGRES_USER: movie
           POSTGRES_PASSWORD: movie
