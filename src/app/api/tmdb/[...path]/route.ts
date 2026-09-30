@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { clientIp, createRateLimiter } from "@/lib/rate-limit";
 import { tmdbFetch } from "@/lib/tmdb";
 
 /**
@@ -26,37 +27,7 @@ const ALLOWED_PATHS = [
 const CACHE_CONTROL =
   "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
 
-const RATE_LIMIT = { windowMs: 60_000, maxRequests: 60 };
-
-/**
- * Per-instance fixed window. Serverless spreads callers across instances, so
- * this is a brake on runaway clients, not a quota — a real quota would need
- * shared storage.
- */
-const hits = new Map<string, { count: number; resetAt: number }>();
-
-function rateLimit(key: string): { allowed: boolean; retryAfter: number } {
-  const now = Date.now();
-  const entry = hits.get(key);
-
-  if (!entry || now >= entry.resetAt) {
-    if (hits.size > 10_000) {
-      for (const [k, v] of hits) if (now >= v.resetAt) hits.delete(k);
-    }
-    hits.set(key, { count: 1, resetAt: now + RATE_LIMIT.windowMs });
-    return { allowed: true, retryAfter: 0 };
-  }
-
-  entry.count += 1;
-  return entry.count > RATE_LIMIT.maxRequests
-    ? { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) }
-    : { allowed: true, retryAfter: 0 };
-}
-
-function clientKey(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || "unknown";
-}
+const rateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 60 });
 
 export async function GET(
   request: NextRequest,
@@ -69,7 +40,7 @@ export async function GET(
     return NextResponse.json({ error: "Unsupported path" }, { status: 404 });
   }
 
-  const { allowed, retryAfter } = rateLimit(clientKey(request));
+  const { allowed, retryAfter } = rateLimit(clientIp(request));
   if (!allowed) {
     return NextResponse.json(
       { error: "Too many requests" },
