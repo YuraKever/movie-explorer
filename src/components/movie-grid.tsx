@@ -1,6 +1,9 @@
 import type { MovieCardData } from "@/features/movies/types";
 import { MovieCard } from "./movie-card";
 
+/** 2 columns on phones (from 320px) → 5 on desktop; shared by every movie grid. */
+export const MOVIE_GRID = "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5";
+
 /**
  * Responsive card grid: 2 columns on phones (from 320px) → 5 on desktop.
  * The empty result is handled here so callers do not repeat that state on every
@@ -21,7 +24,7 @@ export function MovieGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <div className={MOVIE_GRID}>
       {movies.map((movie, i) => (
         <MovieCard key={movie.id} movie={movie} priority={priority && i < 5} />
       ))}
@@ -32,7 +35,7 @@ export function MovieGrid({
 /** Placeholder cards in the same grid, while results load. */
 export function SkeletonGrid({ count = 10 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <div className={MOVIE_GRID}>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
