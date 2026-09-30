@@ -18,7 +18,7 @@ export default async function AskPage() {
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Ask the advisor</h1>
       <p className="mt-1 max-w-2xl text-sm text-foreground/60">
         Describe what you want to watch. Search finds the closest movies, and a
-        local AI model picks the ones that fit and says why.
+        AI model picks the ones that fit and says why.
       </p>
 
       <div className="mt-6">

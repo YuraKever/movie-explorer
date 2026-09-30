@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai";
 import { getMovie } from "@/features/movies/api.server";
 import type { MovieCardData } from "@/features/movies/types";
-import { chatModel } from "@/lib/ai";
+import { chatModel, chatOptions } from "@/lib/ai";
 import { askAnswerSchema, ASK_SYSTEM, buildAskPrompt, keepRetrievedPicks } from "./ask";
 import { findSimilarMovies } from "./retrieve.server";
 
@@ -23,11 +23,11 @@ export async function askAdvisor(question: string): Promise<AdvisorPick[]> {
     output: Output.object({ schema: askAnswerSchema }),
     // Choosing from a list wants the same answer every time, not variety.
     temperature: 0,
-    // A small model can loop inside structured output (seen: 6000+ tokens and
-    // counting); five one-line reasons fit in ~400. The timeout still allows a
-    // cold start, which loads the model first (~28 s measured).
+    providerOptions: chatOptions,
+    // A model can loop inside structured output (a local 4B one ran past 6000
+    // tokens); five one-line reasons fit in ~400.
     maxOutputTokens: 600,
-    timeout: 60_000,
+    timeout: 30_000,
   });
 
   const picks = keepRetrievedPicks(output, candidates);

@@ -13,7 +13,8 @@ const envSchema = z
     BETTER_AUTH_URL: z.url("must be the full origin the app is served from"),
     TMDB_ACCESS_TOKEN: z.string().min(1).optional(),
     TMDB_API_KEY: z.string().min(1).optional(),
-    AI_BASE_URL: z.url("must be an OpenAI-compatible endpoint").optional(),
+    // Optional: without it the site runs and only the AI features report an error.
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
   })
   .refine((env) => env.TMDB_ACCESS_TOKEN || env.TMDB_API_KEY, {
     message: "set TMDB_ACCESS_TOKEN (v4) or TMDB_API_KEY (v3)",

@@ -1,19 +1,17 @@
 import { embed } from "ai";
 import { cosineDistance, desc, sql } from "drizzle-orm";
-import { embeddingModel, embeddingQuery } from "@/lib/ai";
+import { embeddingModel, embeddingOptions } from "@/lib/ai";
 import { db } from "@/lib/db";
 import { contentTsv, movieEmbeddings } from "@/lib/db/schema";
 import { fuseRankings, passesThreshold } from "./hybrid";
 
 /**
- * Beyond this a hit found only by meaning is not really about the query; text
- * matches pass regardless. `npm run ai:eval`: expected movies found by meaning
- * sit at 0.23–0.53, except a mood-only query's (0.57) and a name in Cyrillic
- * (0.60) — the two hits this cuts; the closest match to nonsense is 0.59
- * ("asdf qwerty"), which 0.6 would let through. Re-run the eval after changing
- * the model or documents.
+ * A safety cap, not a relevance filter. With gemini-embedding-2 distance cannot
+ * tell nonsense from a real answer: `npm run ai:eval` puts the closest match to
+ * nonsense at 0.39–0.43 and a correct #1 (Up) at 0.53. The advisor rejects
+ * nonsense itself (4 of 4); this only drops what is plainly unrelated.
  */
-const MAX_DISTANCE = 0.55;
+const MAX_DISTANCE = 0.6;
 
 /** How deep each side looks before fusion; pgvector's HNSW returns at most ef_search (40). */
 const CANDIDATES = 40;
@@ -36,7 +34,11 @@ export async function findSimilarMovies(
   query: string,
   { k = 8, maxDistance = MAX_DISTANCE }: { k?: number; maxDistance?: number } = {},
 ): Promise<RetrievedMovie[]> {
-  const { embedding } = await embed({ model: embeddingModel, value: embeddingQuery(query) });
+  const { embedding } = await embed({
+    model: embeddingModel,
+    value: query,
+    providerOptions: embeddingOptions("RETRIEVAL_QUERY"),
+  });
   const distance = cosineDistance(movieEmbeddings.embedding, embedding);
   const tsQuery = sql`websearch_to_tsquery('english', ${query})`;
   const tsv = contentTsv(movieEmbeddings.content);

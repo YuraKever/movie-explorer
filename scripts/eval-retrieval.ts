@@ -9,6 +9,7 @@
  *   npm run ai:eval -- --advisor  # plus the chat model on every query with an expected movie
  */
 import { readFileSync } from "node:fs";
+import { setTimeout as sleep } from "node:timers/promises";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import { askAdvisor } from "@/features/ai/ask.server";
@@ -25,9 +26,11 @@ import { db } from "@/lib/db";
 import { movieEmbeddings } from "@/lib/db/schema";
 
 const K = 8;
+/** Keeps the advisor run under the free tier's per-minute limit, so a 429 is not scored as a failure. */
+const ADVISOR_PAUSE_MS = 6_000;
 /** Deeper than K to show how far a miss is; pgvector's HNSW returns at most ef_search (40) rows. */
 const DEPTH = 40;
-const THRESHOLDS = [0.5, 0.55, 0.6, 0.65];
+const THRESHOLDS = [0.35, 0.4, 0.45, 0.5, 0.6];
 
 const queries = z
   .array(
@@ -111,6 +114,18 @@ async function evalRetrieval() {
 
 async function evalAdvisor() {
   const asked = queries.filter((q) => q.expect.length > 0);
+
+  // Distance cannot filter nonsense on this model, so the advisor has to.
+  let rejected = 0;
+  const nonsense = queries.filter((q) => q.expect.length === 0);
+  for (const { q } of nonsense) {
+    await sleep(ADVISOR_PAUSE_MS);
+    const answer = await askAdvisor(q).catch(() => null);
+    if (answer?.length === 0) rejected += 1;
+    console.log(`«${q}» (nonsense) → ${answer === null ? "(failed)" : answer.map((p) => p.movie.title).join(", ") || "(nothing)"}`);
+  }
+  console.log(`advisor rejects ${rejected} of ${nonsense.length} nonsense queries\n`);
+
   let expected = 0;
   let picked = 0;
   let empty = 0;
@@ -119,6 +134,7 @@ async function evalAdvisor() {
   let ms = 0;
 
   for (const { q, expect } of asked) {
+    await sleep(ADVISOR_PAUSE_MS);
     const started = Date.now();
     const answer = await askAdvisor(q).catch((error: Error) => {
       failed += 1;

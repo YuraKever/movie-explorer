@@ -84,8 +84,7 @@ export function AskAdvisor() {
         {ask.isPending && (
           <>
             <p className="mb-4 text-sm text-foreground/60">
-              Finding candidates and asking the model — usually 5–15 seconds, longer
-              for the first question after a pause while the model loads…
+              Finding candidates and asking the model — a few seconds…
             </p>
             <SkeletonGrid count={5} />
           </>

@@ -1,27 +1,42 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import {
+  google,
+  type GoogleEmbeddingModelOptions,
+  type GoogleLanguageModelOptions,
+} from "@ai-sdk/google";
 
 /**
- * AI models behind any OpenAI-compatible endpoint. The default is a local Ollama
- * (`brew services start ollama`), so development needs no key and costs nothing.
+ * AI models on the Gemini API. The key comes from GOOGLE_GENERATIVE_AI_API_KEY,
+ * which the provider reads itself.
  */
-const provider = createOpenAICompatible({
-  name: "ollama",
-  baseURL: process.env.AI_BASE_URL ?? "http://localhost:11434/v1",
-  supportsStructuredOutputs: true,
-});
 
 /**
  * Stored vectors are only comparable with vectors from the same model: changing
- * the model or its dimensions means re-indexing every movie.
+ * the model or its dimensions means re-indexing every movie. 1024 rather than
+ * the native 3072: pgvector's HNSW index stops at 2000 dimensions.
  */
 export const EMBEDDING_DIMENSIONS = 1024;
-export const embeddingModel = provider.embeddingModel("qwen3-embedding:0.6b");
+export const embeddingModel = google.embedding("gemini-embedding-2");
+
+/** Gemini embeds asymmetrically: a query and a document each get their own task type. */
+export function embeddingOptions(taskType: "RETRIEVAL_QUERY" | "RETRIEVAL_DOCUMENT") {
+  return {
+    google: {
+      taskType,
+      outputDimensionality: EMBEDDING_DIMENSIONS,
+    } satisfies GoogleEmbeddingModelOptions,
+  };
+}
 
 /**
- * Qwen3-Embedding is asymmetric: a query embeds with a task instruction, a
- * document without one. Tied to the model — a different model wants its own.
+ * Flash-lite: choosing from eight candidates needs no more, and on the free
+ * tier the newest flash models answered 503 "high demand" while this one
+ * answered in under a second.
  */
-export const embeddingQuery = (query: string) =>
-  `Instruct: Given a description of a movie someone wants to watch, retrieve movies that match it\nQuery: ${query}`;
+export const chatModel = google("gemini-3.5-flash-lite");
 
-export const chatModel = provider.chatModel("qwen3:4b-instruct");
+/** Choosing from a short list needs no thinking; it only adds latency and tokens. */
+export const chatOptions = {
+  google: {
+    thinkingConfig: { thinkingLevel: "minimal" },
+  } satisfies GoogleLanguageModelOptions,
+};
