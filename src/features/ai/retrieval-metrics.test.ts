@@ -37,6 +37,12 @@ describe("retrieval metrics", () => {
     expect(cutByThreshold(results, 8, 0.6)).toBe(0);
   });
 
+  it("never counts a text match as cut, whatever its distance", () => {
+    expect(
+      cutByThreshold([{ expect: [1], ranked: [{ movieId: 1, distance: 0.7, textMatch: true }] }], 8, 0.55),
+    ).toBe(0);
+  });
+
   it("returns zero for an empty set instead of NaN", () => {
     expect(recallAt([], 8)).toBe(0);
     expect(meanReciprocalRank([])).toBe(0);

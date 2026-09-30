@@ -1,0 +1,1 @@
+CREATE INDEX "movie_embeddings_fts_idx" ON "movie_embeddings" USING gin (to_tsvector('english', "content"));

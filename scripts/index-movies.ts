@@ -54,7 +54,7 @@ async function main() {
   console.log(`TMDB: ${ids.length} unique movies from ${PAGES} pages of each list`);
 
   const details = await mapLimit(ids, TMDB_CONCURRENCY, (id) =>
-    tmdbFetch<MovieDetail>(`movie/${id}`, { append_to_response: "keywords" }),
+    tmdbFetch<MovieDetail>(`movie/${id}`, { append_to_response: "keywords,credits" }),
   );
   const documents = details.flatMap((movie) => {
     const content = buildMovieDocument(movie);

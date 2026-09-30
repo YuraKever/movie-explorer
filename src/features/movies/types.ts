@@ -65,7 +65,7 @@ export type MovieDetail = Movie & {
   status?: string;
   homepage?: string | null;
   // Present only with append_to_response (see getMovieDetail).
-  credits?: { cast: CastMember[] };
+  credits?: { cast: CastMember[]; crew?: { name: string; job: string }[] };
   videos?: { results: Video[] };
   similar?: PaginatedResponse<Movie>;
   keywords?: { keywords: { id: number; name: string }[] };

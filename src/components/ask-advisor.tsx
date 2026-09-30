@@ -9,9 +9,9 @@ import { MOVIE_GRID, SkeletonGrid } from "./movie-grid";
 
 const EXAMPLES = [
   "A heist that happens inside a dream",
-  "грустный фильм про космос и отца с дочерью",
-  "мир — это компьютерная симуляция",
-  "something to laugh at with friends",
+  "A sad space movie about a father and his daughter",
+  "The world is a computer simulation",
+  "Something to laugh at with friends",
 ];
 
 /**

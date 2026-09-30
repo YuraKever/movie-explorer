@@ -24,6 +24,15 @@ const interstellar: MovieDetail = {
       { id: 3, name: "aftercreditsstinger" },
     ],
   },
+  credits: {
+    cast: ["Matthew McConaughey", "Anne Hathaway", "Michael Caine", "Jessica Chastain", "Casey Affleck", "Wes Bentley"].map(
+      (name, i) => ({ id: i, name, character: "", profile_path: null }),
+    ),
+    crew: [
+      { name: "Hans Zimmer", job: "Original Music Composer" },
+      { name: "Christopher Nolan", job: "Director" },
+    ],
+  },
 };
 
 describe("buildMovieDocument", () => {
@@ -34,6 +43,8 @@ describe("buildMovieDocument", () => {
         "Genres: Adventure, Science Fiction.",
         "Tagline: Mankind was born on Earth. It was never meant to die here.",
         "Keywords: wormhole, space travel.",
+        "Director: Christopher Nolan.",
+        "Starring: Matthew McConaughey, Anne Hathaway, Michael Caine, Jessica Chastain, Casey Affleck.",
         "Runtime: 169 min.",
         "Overview: The adventures of a group of explorers who make use of a newly discovered wormhole.",
       ].join("\n"),
@@ -52,6 +63,7 @@ describe("buildMovieDocument", () => {
         genres: [],
         tagline: "",
         keywords: undefined,
+        credits: undefined,
         runtime: 0,
       }),
     ).toBe(

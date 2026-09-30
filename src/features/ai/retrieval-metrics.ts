@@ -1,7 +1,9 @@
-/** One eval query: the movies it should find and what retrieval returned, closest first. */
+import { passesThreshold } from "./hybrid";
+
+/** One eval query: the movies it should find and what retrieval returned, best first. */
 export type EvalResult = {
   expect: number[];
-  ranked: { movieId: number; distance: number }[];
+  ranked: { movieId: number; distance: number; textMatch?: boolean }[];
 };
 
 /** 1-based rank of each expected movie, or null when retrieval did not return it. */
@@ -38,7 +40,8 @@ export function cutByThreshold(results: EvalResult[], k: number, maxDistance: nu
       cut +
       r.ranked
         .slice(0, k)
-        .filter((hit) => r.expect.includes(hit.movieId) && hit.distance > maxDistance).length,
+        .filter((hit) => r.expect.includes(hit.movieId) && !passesThreshold(hit, maxDistance))
+        .length,
     0,
   );
 }

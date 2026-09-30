@@ -6,7 +6,7 @@
  * threshold so the threshold itself can be judged.
  *
  *   npm run ai:eval               # retrieval only, ~20 s
- *   npm run ai:eval -- --advisor  # plus the chat model on the Russian queries
+ *   npm run ai:eval -- --advisor  # plus the chat model on every query with an expected movie
  */
 import { readFileSync } from "node:fs";
 import { inArray } from "drizzle-orm";
@@ -19,7 +19,8 @@ import {
   recallAt,
   type EvalResult,
 } from "@/features/ai/retrieval-metrics";
-import { findSimilarMovies } from "@/features/ai/retrieve.server";
+import { passesThreshold } from "@/features/ai/hybrid";
+import { findSimilarMovies, type RetrievedMovie } from "@/features/ai/retrieve.server";
 import { db } from "@/lib/db";
 import { movieEmbeddings } from "@/lib/db/schema";
 
@@ -29,10 +30,17 @@ const DEPTH = 40;
 const THRESHOLDS = [0.5, 0.55, 0.6, 0.65];
 
 const queries = z
-  .array(z.object({ q: z.string(), expect: z.array(z.number().int()), hard: z.string().optional() }))
+  .array(
+    z.object({
+      q: z.string(),
+      expect: z.array(z.number().int()),
+      /** Names and titles are scored apart: a fix for them must not cost the plot queries. */
+      kind: z.literal("name").optional(),
+      hard: z.string().optional(),
+    }),
+  )
   .parse(JSON.parse(readFileSync("evals/queries.json", "utf8")));
 
-const hasCyrillic = (text: string) => /[а-яё]/i.test(text);
 const percent = (x: number) => `${(x * 100).toFixed(1)}%`;
 
 /** An expected movie missing from the index would read as a retrieval failure. */
@@ -48,17 +56,17 @@ async function assertIndexed() {
 }
 
 async function evalRetrieval() {
-  const results: (EvalResult & { q: string; titles: Map<number, string> })[] = [];
-  const nonsense: { q: string; top: number }[] = [];
-  for (const { q, expect } of queries) {
+  const results: (EvalResult & { q: string; kind?: "name"; titles: Map<number, string> })[] = [];
+  const nonsense: { q: string; hits: RetrievedMovie[] }[] = [];
+  for (const { q, expect, kind } of queries) {
     if (expect.length === 0) {
-      const [top] = await findSimilarMovies(q, { k: 1, maxDistance: Infinity });
-      nonsense.push({ q, top: top.distance });
+      nonsense.push({ q, hits: await findSimilarMovies(q, { k: K, maxDistance: Infinity }) });
       continue;
     }
     const hits = await findSimilarMovies(q, { k: DEPTH, maxDistance: Infinity });
     results.push({
       q,
+      kind,
       expect,
       ranked: hits,
       titles: new Map(hits.map((h) => [h.movieId, h.content.split("\n")[0]])),
@@ -71,17 +79,29 @@ async function evalRetrieval() {
       const rank = ranks[i];
       if (rank === null) return `${id}: not in top ${DEPTH}`;
       const mark = rank <= K ? "✓" : "✗";
-      return `${mark} ${r.titles.get(id)} #${rank} (${r.ranked[rank - 1].distance.toFixed(3)})`;
+      const hit = r.ranked[rank - 1];
+      return `${mark} ${r.titles.get(id)} #${rank} (${hit.distance.toFixed(3)}${hit.textMatch ? ", text" : ""})`;
     });
     console.log(`«${r.q}»\n   ${cells.join("\n   ")}`);
   }
 
-  for (const n of nonsense) console.log(`«${n.q}» (should find nothing)\n   closest: ${n.top.toFixed(3)}`);
+  for (const n of nonsense) {
+    const closest = Math.min(...n.hits.map((h) => h.distance));
+    const matched = n.hits.filter((h) => h.textMatch).length;
+    console.log(`«${n.q}» (should find nothing)\n   closest: ${closest.toFixed(3)}, text matches: ${matched}`);
+  }
 
-  console.log(`\nrecall@${K}: ${percent(recallAt(results, K))}   MRR: ${meanReciprocalRank(results).toFixed(3)}`);
+  const summary = (label: string, subset: EvalResult[]) =>
+    console.log(
+      `${label.padEnd(8)} recall@${K}: ${percent(recallAt(subset, K))}   MRR: ${meanReciprocalRank(subset).toFixed(3)}   (${subset.length} queries)`,
+    );
+  console.log("");
+  summary("all", results);
+  summary("plot", results.filter((r) => r.kind !== "name"));
+  summary("names", results.filter((r) => r.kind === "name"));
   const found = results.reduce((n, r) => n + ranksOf(r).filter((x) => x !== null && x <= K).length, 0);
   for (const t of THRESHOLDS) {
-    const passed = nonsense.filter((n) => n.top <= t).length;
+    const passed = nonsense.filter((n) => n.hits.some((h) => passesThreshold(h, t))).length;
     console.log(
       `threshold ${t}: cuts ${cutByThreshold(results, K, t)} of ${found} expected hits in the top ${K}, ` +
         `lets ${passed} of ${nonsense.length} nonsense queries through`,
@@ -90,24 +110,36 @@ async function evalRetrieval() {
 }
 
 async function evalAdvisor() {
-  const russian = queries.filter((q) => hasCyrillic(q.q) && q.expect.length > 0);
-  let reasons = 0;
-  let inRussian = 0;
+  const asked = queries.filter((q) => q.expect.length > 0);
   let expected = 0;
-  let survived = 0;
+  let picked = 0;
+  let empty = 0;
+  let picks = 0;
+  let failed = 0;
+  let ms = 0;
 
-  for (const { q, expect } of russian) {
-    const picks = await askAdvisor(q);
-    reasons += picks.length;
-    inRussian += picks.filter((p) => hasCyrillic(p.reason)).length;
+  for (const { q, expect } of asked) {
+    const started = Date.now();
+    const answer = await askAdvisor(q).catch((error: Error) => {
+      failed += 1;
+      console.log(`«${q}» → (failed: ${error.name})`);
+      return null;
+    });
+    ms += Date.now() - started;
+    if (!answer) continue;
+    picks += answer.length;
+    empty += answer.length === 0 ? 1 : 0;
     expected += expect.length;
-    survived += expect.filter((id) => picks.some((p) => p.movie.id === id)).length;
-    console.log(`«${q}» → ${picks.map((p) => p.movie.title).join(", ") || "(nothing)"}`);
+    picked += expect.filter((id) => answer.some((p) => p.movie.id === id)).length;
+    console.log(`«${q}» → ${answer.length === 0 ? "(nothing)" : ""}`);
+    for (const p of answer) console.log(`   ${p.movie.title} — ${p.reason}`);
   }
 
-  console.log(`\nadvisor on ${russian.length} Russian queries:`);
-  console.log(`  reasons in Russian: ${inRussian}/${reasons} (${percent(reasons ? inRussian / reasons : 0)})`);
-  console.log(`  expected movies picked: ${survived}/${expected}`);
+  const n = asked.length;
+  console.log(
+    `\nadvisor (${n} queries): expected picked ${picked}/${expected}, empty ${empty}, failed ${failed}, ` +
+      `avg picks ${(picks / n).toFixed(1)}, avg ${Math.round(ms / n)} ms`,
+  );
 }
 
 async function main() {

@@ -23,6 +23,11 @@ export async function askAdvisor(question: string): Promise<AdvisorPick[]> {
     output: Output.object({ schema: askAnswerSchema }),
     // Choosing from a list wants the same answer every time, not variety.
     temperature: 0,
+    // A small model can loop inside structured output (seen: 6000+ tokens and
+    // counting); five one-line reasons fit in ~400. The timeout still allows a
+    // cold start, which loads the model first (~28 s measured).
+    maxOutputTokens: 600,
+    timeout: 60_000,
   });
 
   const picks = keepRetrievedPicks(output, candidates);

@@ -34,7 +34,7 @@ export default async function SearchPage({ searchParams }: Props) {
       </h1>
       <p className="mt-1 text-sm text-foreground/60">
         {mode === "meaning"
-          ? "Describe what you want to watch — the plot, the mood, a theme. Any language."
+          ? "Describe what you want to watch — the plot, the mood, a theme."
           : "Find a movie by title — data by TMDB."}
       </p>
 
