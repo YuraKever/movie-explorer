@@ -4,6 +4,13 @@ import type { MovieDetail } from "@/features/movies/types";
 const MAX_KEYWORDS = 20;
 
 /**
+ * TMDB tags about the release, not the story ("aftercreditsstinger"). Dropping
+ * wider release tags (sequel, remake…) measured worse: sequels drifted ahead of
+ * the originals.
+ */
+const isMetaKeyword = (name: string) => /creditsstinger$/.test(name);
+
+/**
  * The text a movie is embedded as — whatever is missing here is invisible to
  * semantic search. Labelled lines in English, the language of TMDB's data.
  * Returns null without an overview: a title alone embeds as noise.
@@ -13,7 +20,10 @@ export function buildMovieDocument(movie: MovieDetail): string | null {
   if (!overview) return null;
 
   const year = movie.release_date?.slice(0, 4);
-  const keywords = movie.keywords?.keywords.slice(0, MAX_KEYWORDS).map((k) => k.name);
+  const keywords = movie.keywords?.keywords
+    .map((k) => k.name)
+    .filter((name) => !isMetaKeyword(name))
+    .slice(0, MAX_KEYWORDS);
 
   return [
     year ? `${movie.title} (${year}).` : `${movie.title}.`,

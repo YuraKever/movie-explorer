@@ -21,6 +21,7 @@ const interstellar: MovieDetail = {
     keywords: [
       { id: 1, name: "wormhole" },
       { id: 2, name: "space travel" },
+      { id: 3, name: "aftercreditsstinger" },
     ],
   },
 };
@@ -37,6 +38,10 @@ describe("buildMovieDocument", () => {
         "Overview: The adventures of a group of explorers who make use of a newly discovered wormhole.",
       ].join("\n"),
     );
+  });
+
+  it("keeps release tags like credit stingers out of the keywords", () => {
+    expect(buildMovieDocument(interstellar)).not.toContain("stinger");
   });
 
   it("drops the lines TMDB has no data for", () => {

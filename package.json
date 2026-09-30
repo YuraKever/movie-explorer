@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "ai:index": "tsx --env-file-if-exists=.env.local scripts/index-movies.ts"
+    "ai:index": "tsx --env-file-if-exists=.env.local scripts/index-movies.ts",
+    "ai:eval": "tsx --env-file-if-exists=.env.local scripts/eval-retrieval.ts"
   },
   "engines": {
     "node": ">=22"
