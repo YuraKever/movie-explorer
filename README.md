@@ -175,6 +175,23 @@ only `DATABASE_URL` changes) and add `TMDB_ACCESS_TOKEN`, `DATABASE_URL`,
 `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (the production domain) to the environment
 variables. Migrations: run `npm run db:migrate` against the Neon connection string.
 
+**Growing the movie index** (search by meaning and `/ask` need `GOOGLE_GENERATIVE_AI_API_KEY`):
+
+```bash
+npm run ai:index -- 100   # TMDB's most-voted and top rated, 100 pages each (~4000 movies)
+npm run ai:eval           # recall@8 / MRR against evals/queries.json
+npm run ai:sync-prod      # copy the local index to production
+```
+
+Gemini's free tier embeds 1000 texts a day. `ai:index` waits out the per-minute limit on
+its own and stops cleanly at the daily one ("run again tomorrow"); every finished movie is
+kept, so running the same command once a day grows the catalog. `ai:sync-prod` reads the
+target from `DATABASE_URL` in `.env.production.local` (never committed), switches Neon's
+`-pooler` host to the direct endpoint, replaces the table in one transaction and commits
+only when row count and checksum match the local copy — production spends no quota of its
+own, since the same model gives the same vectors. `SYNC_TARGET_URL` points it at a scratch
+database instead.
+
 ## What I learned
 
 - **App Router in practice:** where an RSC is genuinely needed and where a Client
