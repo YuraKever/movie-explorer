@@ -2,11 +2,17 @@ import { z } from "zod";
 import { PEOPLE_LABELS } from "./movie-document";
 import type { RetrievedMovie } from "./retrieve.server";
 
+export const MAX_PICKS = 5;
+
+/** Who chooses among the retrieved candidates. */
+export const ADVISOR_ENGINES = ["jev", "gemini"] as const;
+export type AdvisorEngine = (typeof ADVISOR_ENGINES)[number];
+
 /** What the model must return — enforced by the provider and validated by the SDK. */
 export const askAnswerSchema = z.object({
   picks: z
     .array(z.object({ movieId: z.number().int(), reason: z.string() }))
-    .max(5),
+    .max(MAX_PICKS),
 });
 
 export type AskAnswer = z.infer<typeof askAnswerSchema>;
@@ -61,4 +67,19 @@ export function keepRetrievedPicks(
     seen.add(pick.movieId);
     return true;
   });
+}
+
+/** Tuned with `npm run ai:eval -- --jev`: see RAG-PLAN.md, step 13. */
+export const JEV_THRESHOLD = 0.5;
+
+/** The candidates Jev finds likely enough, most likely first, at most MAX_PICKS. */
+export function chooseByProbability(
+  candidates: RetrievedMovie[],
+  ratings: Map<number, number>,
+  threshold = JEV_THRESHOLD,
+): RetrievedMovie[] {
+  return candidates
+    .filter((c) => (ratings.get(c.movieId) ?? 0) >= threshold)
+    .sort((a, b) => ratings.get(b.movieId)! - ratings.get(a.movieId)!)
+    .slice(0, MAX_PICKS);
 }

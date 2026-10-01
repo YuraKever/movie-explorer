@@ -192,6 +192,12 @@ only when row count and checksum match the local copy — production spends no q
 own, since the same model gives the same vectors. `SYNC_TARGET_URL` points it at a scratch
 database instead.
 
+**Choosing the advisor's picks** (optional `TYPESAFE_API_KEY`): with the key, TypeSafe's
+[Jev](https://docs.typesafe.ai/api) rates every retrieved candidate with a probability and
+the likely ones (≥ 0.5) become the picks, in ~0.3 s and without a written reason. Without
+the key, or when Jev fails or takes over 5 s, Gemini chooses and explains as before.
+`npm run ai:eval -- --jev` scores Jev's ratings at a range of thresholds.
+
 ## What I learned
 
 - **App Router in practice:** where an RSC is genuinely needed and where a Client

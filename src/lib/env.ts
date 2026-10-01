@@ -15,6 +15,8 @@ const envSchema = z
     TMDB_API_KEY: z.string().min(1).optional(),
     // Optional: without it the site runs and only the AI features report an error.
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
+    // Optional: without it Gemini chooses the advisor's picks itself.
+    TYPESAFE_API_KEY: z.string().min(1).optional(),
   })
   .refine((env) => env.TMDB_ACCESS_TOKEN || env.TMDB_API_KEY, {
     message: "set TMDB_ACCESS_TOKEN (v4) or TMDB_API_KEY (v3)",

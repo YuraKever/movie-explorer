@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { askRequest } from "@/features/ai/api";
+import type { AdvisorEngine } from "@/features/ai/ask";
 import { ErrorTile } from "./error-tile";
 import { MovieCard } from "./movie-card";
 import { MOVIE_GRID, SkeletonGrid } from "./movie-grid";
@@ -14,24 +15,51 @@ const EXAMPLES = [
   "Something to laugh at with friends",
 ];
 
+const ENGINES: { engine: AdvisorEngine; label: string }[] = [
+  { engine: "jev", label: "Jev" },
+  { engine: "gemini", label: "Gemini" },
+];
+
 /**
- * The advisor: a question in, up to five cards with the model's reason out.
+ * The advisor: a question in, up to five cards out — with the model's reason
+ * when Gemini chose them; Jev's picks come without one. The engine switch is
+ * for comparing the two on the same question.
  * Not kept in the URL like search: a reload or a shared link would re-run a
  * model call of several seconds for an answer nobody asked for again.
  */
 export function AskAdvisor() {
   const [question, setQuestion] = useState("");
+  const [engine, setEngine] = useState<AdvisorEngine>("jev");
   const ask = useMutation({ mutationFn: askRequest });
 
   function submit(text: string) {
     const q = text.trim();
     if (q.length < 3 || ask.isPending) return;
     setQuestion(q);
-    ask.mutate(q);
+    ask.mutate({ question: q, engine });
   }
 
   return (
     <div>
+      <div
+        role="radiogroup"
+        aria-label="Who chooses the movies"
+        className="mb-3 inline-flex rounded-lg border border-black/10 p-0.5 text-sm dark:border-white/15"
+      >
+        {ENGINES.map((e) => (
+          <button
+            key={e.engine}
+            type="button"
+            role="radio"
+            aria-checked={e.engine === engine}
+            onClick={() => setEngine(e.engine)}
+            className="rounded-md px-3 py-1.5 text-foreground/70 transition-colors hover:text-foreground aria-checked:bg-amber-500 aria-checked:text-black"
+          >
+            {e.label}
+          </button>
+        ))}
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -76,7 +104,7 @@ export function AskAdvisor() {
       {/* Announces what the grid below cannot: that the wait ended and how. */}
       <p aria-live="polite" className="sr-only">
         {ask.isPending && "Looking for movies"}
-        {ask.isSuccess && `${ask.data.length} movies suggested`}
+        {ask.isSuccess && `${ask.data.picks.length} movies suggested`}
         {ask.isError && "The advisor could not answer"}
       </p>
 
@@ -92,17 +120,26 @@ export function AskAdvisor() {
 
         {ask.isError && <ErrorTile title="No answer this time" error={ask.error} />}
 
+        {ask.isSuccess && (
+          <p className="mb-4 text-xs text-foreground/60">
+            Chosen by {ask.data.engine === "jev" ? "Jev" : "Gemini"}
+            {ask.data.engine !== ask.variables.engine && " — Jev is unavailable right now"}
+          </p>
+        )}
+
         {ask.isSuccess &&
-          (ask.data.length === 0 ? (
+          (ask.data.picks.length === 0 ? (
             <p className="py-16 text-center text-foreground/60">
               Nothing in the catalog fits that. Try describing the plot, the mood or a theme.
             </p>
           ) : (
             <ul className={MOVIE_GRID}>
-              {ask.data.map(({ movie, reason }, i) => (
+              {ask.data.picks.map(({ movie, reason }, i) => (
                 <li key={movie.id}>
                   <MovieCard movie={movie} priority={i < 5} />
-                  <p className="mt-1 text-xs leading-relaxed text-foreground/70">{reason}</p>
+                  {reason && (
+                    <p className="mt-1 text-xs leading-relaxed text-foreground/70">{reason}</p>
+                  )}
                 </li>
               ))}
             </ul>

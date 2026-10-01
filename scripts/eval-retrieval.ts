@@ -7,12 +7,18 @@
  *
  *   npm run ai:eval               # retrieval only, ~20 s
  *   npm run ai:eval -- --advisor  # plus the chat model on every query with an expected movie
+ *   npm run ai:eval -- --jev      # plus Jev's ratings of the advisor's candidates and a threshold sweep
+ *
+ * The advisor uses Jev when TYPESAFE_API_KEY is set; `TYPESAFE_API_KEY= npm run ai:eval -- --advisor`
+ * measures Gemini choosing on its own.
  */
 import { readFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
+import { chooseByProbability } from "@/features/ai/ask";
 import { askAdvisor } from "@/features/ai/ask.server";
+import { rateCandidates } from "@/features/ai/jev.server";
 import {
   cutByThreshold,
   meanReciprocalRank,
@@ -31,6 +37,7 @@ const ADVISOR_PAUSE_MS = 6_000;
 /** Deeper than K to show how far a miss is; pgvector's HNSW returns at most ef_search (40) rows. */
 const DEPTH = 40;
 const THRESHOLDS = [0.35, 0.4, 0.45, 0.5, 0.6];
+const JEV_THRESHOLDS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
 const queries = z
   .array(
@@ -120,7 +127,7 @@ async function evalAdvisor() {
   const nonsense = queries.filter((q) => q.expect.length === 0);
   for (const { q } of nonsense) {
     await sleep(ADVISOR_PAUSE_MS);
-    const answer = await askAdvisor(q).catch(() => null);
+    const answer = await askAdvisor(q).then((a) => a.picks).catch(() => null);
     if (answer?.length === 0) rejected += 1;
     console.log(`«${q}» (nonsense) → ${answer === null ? "(failed)" : answer.map((p) => p.movie.title).join(", ") || "(nothing)"}`);
   }
@@ -136,7 +143,7 @@ async function evalAdvisor() {
   for (const { q, expect } of asked) {
     await sleep(ADVISOR_PAUSE_MS);
     const started = Date.now();
-    const answer = await askAdvisor(q).catch((error: Error) => {
+    const answer = await askAdvisor(q).then((a) => a.picks).catch((error: Error) => {
       failed += 1;
       console.log(`«${q}» → (failed: ${error.name})`);
       return null;
@@ -148,14 +155,67 @@ async function evalAdvisor() {
     expected += expect.length;
     picked += expect.filter((id) => answer.some((p) => p.movie.id === id)).length;
     console.log(`«${q}» → ${answer.length === 0 ? "(nothing)" : ""}`);
-    for (const p of answer) console.log(`   ${p.movie.title} — ${p.reason}`);
+    for (const p of answer) console.log(`   ${p.movie.title}${p.reason ? ` — ${p.reason}` : ""}`);
   }
 
   const n = asked.length;
   console.log(
-    `\nadvisor (${n} queries): expected picked ${picked}/${expected}, empty ${empty}, failed ${failed}, ` +
-      `avg picks ${(picks / n).toFixed(1)}, avg ${Math.round(ms / n)} ms`,
+    `\nadvisor (${n} queries): expected picked ${picked}/${expected}, extra picks ${picks - picked}, ` +
+      `empty ${empty}, failed ${failed}, avg picks ${(picks / n).toFixed(1)}, avg ${Math.round(ms / n)} ms`,
   );
+}
+
+/**
+ * Jev on the advisor's own candidates (production retrieval): one rating per
+ * query, then every threshold is scored offline on the same ratings.
+ */
+async function evalJev() {
+  const rated = [];
+  const latencies: number[] = [];
+  for (const { q, expect } of queries) {
+    const candidates = await findSimilarMovies(q);
+    if (candidates.length === 0) {
+      rated.push({ q, expect, candidates, ratings: new Map<number, number>() });
+      continue;
+    }
+    const started = Date.now();
+    const ratings = await rateCandidates(q, candidates);
+    latencies.push(Date.now() - started);
+    if (!ratings) throw new Error("TYPESAFE_API_KEY is not set");
+    rated.push({ q, expect, candidates, ratings });
+    const cells = [...candidates]
+      .sort((a, b) => ratings.get(b.movieId)! - ratings.get(a.movieId)!)
+      .map((c) => `${expect.includes(c.movieId) ? "*" : " "}${ratings.get(c.movieId)!.toFixed(2)} ${c.content.split("\n")[0]}`);
+    console.log(`«${q}»${expect.length === 0 ? " (nonsense)" : ""}\n   ${cells.join("\n   ")}`);
+  }
+
+  latencies.sort((a, b) => a - b);
+  const avg = latencies.reduce((sum, x) => sum + x, 0) / latencies.length;
+  console.log(
+    `\nJev latency (${latencies.length} calls): avg ${Math.round(avg)} ms, ` +
+      `p95 ${latencies[Math.ceil(latencies.length * 0.95) - 1]} ms, max ${latencies.at(-1)} ms\n`,
+  );
+
+  const asked = rated.filter((r) => r.expect.length > 0);
+  const nonsense = rated.filter((r) => r.expect.length === 0);
+  const expected = asked.reduce((n, r) => n + r.expect.length, 0);
+  for (const t of JEV_THRESHOLDS) {
+    let picked = 0;
+    let extra = 0;
+    let empty = 0;
+    for (const r of asked) {
+      const chosen = chooseByProbability(r.candidates, r.ratings, t).map((c) => c.movieId);
+      const hits = r.expect.filter((id) => chosen.includes(id)).length;
+      picked += hits;
+      extra += chosen.length - hits;
+      empty += chosen.length === 0 ? 1 : 0;
+    }
+    const rejected = nonsense.filter((r) => chooseByProbability(r.candidates, r.ratings, t).length === 0).length;
+    console.log(
+      `threshold ${t.toFixed(1)}: expected picked ${picked}/${expected}, extra picks ${extra}, ` +
+        `empty ${empty}/${asked.length}, nonsense rejected ${rejected}/${nonsense.length}`,
+    );
+  }
 }
 
 async function main() {
@@ -164,6 +224,10 @@ async function main() {
   if (process.argv.includes("--advisor")) {
     console.log("");
     await evalAdvisor();
+  }
+  if (process.argv.includes("--jev")) {
+    console.log("");
+    await evalJev();
   }
 }
 

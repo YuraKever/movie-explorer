@@ -5,7 +5,9 @@ import { getSession } from "@/lib/dal";
 import { POST } from "./route";
 
 vi.mock("@/lib/dal", () => ({ getSession: vi.fn() }));
-vi.mock("@/features/ai/ask.server", () => ({ askAdvisor: vi.fn(async () => []) }));
+vi.mock("@/features/ai/ask.server", () => ({
+  askAdvisor: vi.fn(async (_q: string, engine: string) => ({ engine, picks: [] })),
+}));
 
 /** Each test signs in as a fresh user so the per-user window starts clean. */
 let user = 0;
@@ -41,19 +43,31 @@ describe("POST /api/ask", () => {
 
   it("rejects a question that is too short, too long or not JSON", async () => {
     signIn();
-    for (const body of [{ question: "  a " }, { question: "x".repeat(301) }, "not json"]) {
+    for (const body of [
+      { question: "  a " },
+      { question: "x".repeat(301) },
+      { question: "a robot in love", engine: "gpt" },
+      "not json",
+    ]) {
       expect((await ask(body)).status).toBe(400);
     }
     expect(askAdvisor).not.toHaveBeenCalled();
   });
 
-  it("passes the trimmed question on and returns the picks", async () => {
+  it("passes the trimmed question on with Jev as the default engine", async () => {
     signIn();
     const res = await ask({ question: "  a robot in love  " });
 
     expect(res.status).toBe(200);
-    expect(askAdvisor).toHaveBeenCalledWith("a robot in love");
-    await expect(res.json()).resolves.toEqual({ picks: [] });
+    expect(askAdvisor).toHaveBeenCalledWith("a robot in love", "jev");
+    await expect(res.json()).resolves.toEqual({ engine: "jev", picks: [] });
+  });
+
+  it("passes the chosen engine on", async () => {
+    signIn();
+    await ask({ question: "a robot in love", engine: "gemini" });
+
+    expect(askAdvisor).toHaveBeenCalledWith("a robot in love", "gemini");
   });
 
   it("limits each user to ten questions a minute", async () => {

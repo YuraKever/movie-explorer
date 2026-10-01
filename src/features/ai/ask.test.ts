@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAskPrompt, candidateForModel, keepRetrievedPicks } from "./ask";
+import { buildAskPrompt, candidateForModel, chooseByProbability, keepRetrievedPicks } from "./ask";
 import type { RetrievedMovie } from "./retrieve.server";
 
 const candidates: RetrievedMovie[] = [
@@ -53,5 +53,23 @@ describe("candidateForModel", () => {
 
   it("keeps them when the query matched the text — the names are why it is there", () => {
     expect(candidateForModel({ movieId: 157336, content, distance: 0.6, textMatch: true })).toBe(content);
+  });
+});
+
+describe("chooseByProbability", () => {
+  const many: RetrievedMovie[] = [1, 2, 3, 4, 5, 6, 7].map((movieId) => ({
+    movieId,
+    content: `Movie ${movieId}.`,
+    distance: 0.5,
+  }));
+
+  it("keeps the likely candidates, most likely first", () => {
+    const ratings = new Map([[1, 0.3], [2, 0.8], [3, 0.5], [4, 0.95]]);
+    expect(chooseByProbability(many, ratings, 0.5).map((c) => c.movieId)).toEqual([4, 2, 3]);
+  });
+
+  it("stops at five picks", () => {
+    const ratings = new Map(many.map((c) => [c.movieId, 0.9]));
+    expect(chooseByProbability(many, ratings, 0.5)).toHaveLength(5);
   });
 });

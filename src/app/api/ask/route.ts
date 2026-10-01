@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { ADVISOR_ENGINES } from "@/features/ai/ask";
 import { askAdvisor } from "@/features/ai/ask.server";
 import { getSession } from "@/lib/dal";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   question: z.string().trim().min(3).max(300),
+  engine: z.enum(ADVISOR_ENGINES).default("jev"),
 });
 
 /** A model call holds the machine for seconds — far below the proxy's 60 a minute. */
 const rateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 10 });
 
 /**
- * POST /api/ask — the movie advisor: `{ question }` → `{ picks: [{ movie, reason }] }`.
+ * POST /api/ask — the movie advisor: `{ question, engine? }` → `{ engine, picks: [{ movie, reason? }] }`.
  * Signed-in users only, limited per user rather than per IP: the session is
  * the identity we trust, and an IP can be shared by a whole office.
  */
@@ -40,8 +42,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const picks = await askAdvisor(parsed.data.question);
-    return NextResponse.json({ picks });
+    return NextResponse.json(await askAdvisor(parsed.data.question, parsed.data.engine));
   } catch (error) {
     // The message may name internal hosts — log it, answer with something useful.
     console.error("Advisor failed:", error);

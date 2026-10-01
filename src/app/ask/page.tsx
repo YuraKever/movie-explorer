@@ -17,8 +17,9 @@ export default async function AskPage() {
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Ask the advisor</h1>
       <p className="mt-1 max-w-2xl text-sm text-foreground/60">
-        Describe what you want to watch. Search finds the closest movies, and a
-        AI model picks the ones that fit and says why.
+        Describe what you want to watch. Search finds the closest movies, and an
+        AI model picks the ones that fit: Jev in a fraction of a second, or Gemini
+        with a reason for each.
       </p>
 
       <div className="mt-6">
